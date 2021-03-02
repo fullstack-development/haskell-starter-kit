@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: dde73005df9b45169670e9b0ba5c6c559ae971d4c6797eab9709dd90cc74b024
+-- hash: 236ef43c2aec408f415b27e0302d838762cde052752c443229ec460aca0fc57a
 
 name:           haskell-starter-kit
 version:        0.1.0.0
@@ -35,7 +35,9 @@ library
   default-extensions: RecordWildCards OverloadedStrings FlexibleContexts
   build-depends:
       base >=4.7 && <5
+    , bytestring
     , co-log
+    , mtl
   default-language: Haskell2010
 
 executable haskell-starter-kit-exe
@@ -48,8 +50,10 @@ executable haskell-starter-kit-exe
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , bytestring
     , co-log
     , haskell-starter-kit
+    , mtl
   default-language: Haskell2010
 
 test-suite haskell-starter-kit-test
@@ -63,6 +67,8 @@ test-suite haskell-starter-kit-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , bytestring
     , co-log
     , haskell-starter-kit
+    , mtl
   default-language: Haskell2010
