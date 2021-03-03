@@ -3,11 +3,26 @@ module Lib
   ) where
 
 import qualified Colog as Log
-import Data.Functor.Contravariant (Contravariant(contramap))
 import qualified Data.ByteString as BS
+import Data.Functor.Contravariant (Contravariant(contramap))
+import qualified Logger.Colog as Log
+import qualified Logger.Config as Log
 
 someFunc :: IO ()
-someFunc = Log.usingLoggerT (Log.upgradeMessageAction Log.defaultFieldMap $ Log.cmapM Log.fmtRichMessageDefault Log.logTextStdout) example
+someFunc =
+  Log.usingLoggerT
+    (Log.upgradeMessageAction (Log.fieldMapIO conf) $
+     Log.cmapM Log.fmtRichMessageDefault Log.logTextStdout)
+    example
+
+conf :: Log.LoggerConfig
+conf =
+  Log.LoggerConfig
+    { appInstanceName = "MetaApp"
+    , logToStdout = True
+    , logToFile = Nothing
+    , logLevel = Log.Debug
+    }
 
 fmt :: Log.RichMsg m Log.Message -> m BS.ByteString
 fmt = error "not implemented"

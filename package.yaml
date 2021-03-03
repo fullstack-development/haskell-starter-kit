@@ -23,14 +23,19 @@ dependencies:
 - base >= 4.7 && < 5
 - mtl
 - bytestring
+- text
 
 # Logger
 - co-log
+- chronos
 
 default-extensions:
 - RecordWildCards
 - OverloadedStrings
 - FlexibleContexts
+- FlexibleInstances
+- ScopedTypeVariables
+- ExplicitForAll
 
 library:
   source-dirs: src
