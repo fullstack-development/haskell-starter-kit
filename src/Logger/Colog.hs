@@ -52,9 +52,9 @@ fmtRichMessage RichMsg {richMsgMsg = Msg {..}, ..} = do
   appInstanceName <- extractField $ TM.lookup @"appInstanceName" richMsgMap
   let logObj =
         J.object
-          [ "timestamp" .= timestamp
+          [ "timestamp" .= (C.timeToDatetime <$> timestamp)
           , "appInstanceName" .= appInstanceName
-          , "severity" .= showSeverity msgSeverity
+          , "severity" .= show msgSeverity
           , "trace" .= showSourceLoc msgStack
           , "message" .= msgText
           ]
