@@ -24,10 +24,12 @@ dependencies:
 - mtl
 - bytestring
 - text
+- aeson
 
 # Logger
 - co-log
 - chronos
+- typerep-map
 
 default-extensions:
 - RecordWildCards

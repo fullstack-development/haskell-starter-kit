@@ -12,7 +12,7 @@ someFunc :: IO ()
 someFunc =
   Log.usingLoggerT
     (Log.upgradeMessageAction (Log.fieldMapIO conf) $
-     Log.cmapM Log.fmtRichMessageDefault Log.logTextStdout)
+     Log.cmapM Log.fmtRichMessage Log.logByteStringStdout)
     example
 
 conf :: Log.LoggerConfig
@@ -23,9 +23,6 @@ conf =
     , logToFile = Nothing
     , logLevel = Log.Debug
     }
-
-fmt :: Log.RichMsg m Log.Message -> m BS.ByteString
-fmt = error "not implemented"
 
 -- type WithLog env msg m = (MonadReader env m, HasLog env msg m)
 example :: Log.WithLog env Log.Message m => m ()
