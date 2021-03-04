@@ -9,11 +9,7 @@ import qualified Logger.Colog as Log
 import qualified Logger.Config as Log
 
 someFunc :: IO ()
-someFunc =
-  Log.usingLoggerT
-    (Log.upgradeMessageAction (Log.fieldMapIO conf) $
-     Log.cmapM Log.fmtRichMessage Log.logByteStringStdout)
-    example
+someFunc = Log.usingLoggerT (Log.mkLogActionIO conf) example
 
 conf :: Log.LoggerConfig
 conf =

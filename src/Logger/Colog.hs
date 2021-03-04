@@ -9,6 +9,7 @@ module Logger.Colog
   , fieldMapIO
   , fieldMapM
   , fmtRichMessage
+  , mkLogActionIO
   ) where
 
 import qualified Chronos as C
@@ -59,3 +60,12 @@ fmtRichMessage RichMsg {richMsgMsg = Msg {..}, ..} = do
           , "message" .= msgText
           ]
   pure $ LBS.toStrict $ J.encode logObj
+
+-- TODO add logging to file support
+mkLogActionIO :: MonadIO m => Conf.LoggerConfig -> LogAction m Message
+mkLogActionIO conf@Conf.LoggerConfig {..}=
+  filterBySeverity logLevel msgSeverity $
+  upgradeMessageAction (fieldMapIO conf) $
+  cmapM fmtRichMessage logger
+  where
+    logger = if logToStdout then logByteStringStdout else mempty
