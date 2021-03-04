@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 45909cdaab2d63d699bff21911fa393251915cfd3500ad023462bd5eac16ccd2
+-- hash: 62c1baf1ef52027475181b0e8094a5f2f1befc4aee0aa41a6fd8938f71adfb35
 
 name:           haskell-starter-kit
 version:        0.1.0.0
@@ -28,35 +28,64 @@ source-repository head
 library
   exposed-modules:
       Lib
+      Logger.Colog
+      Logger.Config
+      Time.Clock
   other-modules:
       Paths_haskell_starter_kit
   hs-source-dirs:
       src
+  default-extensions: RecordWildCards OverloadedStrings FlexibleContexts FlexibleInstances ScopedTypeVariables ExplicitForAll
   build-depends:
-      base >=4.7 && <5
+      aeson
+    , base >=4.7 && <5
+    , bytestring
+    , co-log
+    , mtl
+    , text
+    , time
+    , typerep-map
   default-language: Haskell2010
 
 executable haskell-starter-kit-exe
   main-is: Main.hs
-  other-modules:
-      Paths_haskell_starter_kit
   hs-source-dirs:
       app
+  default-extensions: RecordWildCards OverloadedStrings FlexibleContexts FlexibleInstances ScopedTypeVariables ExplicitForAll
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      aeson
+    , base >=4.7 && <5
+    , bytestring
+    , co-log
     , haskell-starter-kit
+    , mtl
+    , text
+    , time
+    , typerep-map
+  if false
+    other-modules:
+        Paths_haskell_starter_kit
   default-language: Haskell2010
 
 test-suite haskell-starter-kit-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
-  other-modules:
-      Paths_haskell_starter_kit
   hs-source-dirs:
       test
+  default-extensions: RecordWildCards OverloadedStrings FlexibleContexts FlexibleInstances ScopedTypeVariables ExplicitForAll
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      aeson
+    , base >=4.7 && <5
+    , bytestring
+    , co-log
     , haskell-starter-kit
+    , mtl
+    , text
+    , time
+    , typerep-map
+  if false
+    other-modules:
+        Paths_haskell_starter_kit
   default-language: Haskell2010
