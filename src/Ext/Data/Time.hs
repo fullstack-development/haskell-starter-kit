@@ -1,22 +1,20 @@
-{-# LANGUAGE TypeApplications #-}
-
 module Ext.Data.Time
   ( MonadClock (..),
     now,
   )
 where
 
-import qualified Chronos as C
 import Control.Monad.IO.Class (MonadIO (..))
+import qualified Data.Time as Time
 
 class
   (Monad m) =>
   MonadClock m
   where
-  getCurrentTime :: m C.Time
+  getCurrentTime :: m Time.UTCTime
 
 instance MonadClock IO where
-  getCurrentTime = C.now
+  getCurrentTime = Time.getCurrentTime
 
-now :: MonadIO m => m C.Time
+now :: MonadIO m => m Time.UTCTime
 now = liftIO getCurrentTime

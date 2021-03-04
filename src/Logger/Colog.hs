@@ -13,7 +13,6 @@ module Logger.Colog
   )
 where
 
-import qualified Chronos as C
 import Colog as Export
 import Control.Monad.IO.Class (MonadIO)
 import Data.Aeson ((.=))
@@ -21,15 +20,17 @@ import qualified Data.Aeson as J
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
+import qualified Data.Time as Time
 import qualified Data.TypeRepMap as TM
+import qualified Ext.Data.Time as Clock
 import qualified Ext.Data.Time as Time
 import qualified Logger.Config as Conf
 
-type instance FieldType "timestamp" = C.Time
+type instance FieldType "timestamp" = Time.UTCTime
 
 type instance FieldType "appInstanceName" = T.Text
 
-fieldMapM :: Time.MonadClock m => Conf.LoggerConfig -> FieldMap m
+fieldMapM :: Clock.MonadClock m => Conf.LoggerConfig -> FieldMap m
 fieldMapM conf = timestampedFieldMapM <> fieldMap conf
 
 fieldMapIO :: MonadIO m => Conf.LoggerConfig -> FieldMap m
@@ -37,15 +38,15 @@ fieldMapIO conf = timestampedFieldMapIO <> fieldMap conf
 
 timestampedFieldMapM ::
   forall m.
-  Time.MonadClock m =>
+  Clock.MonadClock m =>
   FieldMap m
-timestampedFieldMapM = [#timestamp Time.getCurrentTime]
+timestampedFieldMapM = [#timestamp Clock.getCurrentTime]
 
 timestampedFieldMapIO ::
   forall m.
   MonadIO m =>
   FieldMap m
-timestampedFieldMapIO = [#timestamp Time.now]
+timestampedFieldMapIO = [#timestamp Clock.now]
 
 fieldMap :: Monad m => Conf.LoggerConfig -> FieldMap m
 fieldMap Conf.LoggerConfig {..} = [#appInstanceName (pure appInstanceName)]
@@ -56,7 +57,7 @@ fmtRichMessage RichMsg {richMsgMsg = Msg {..}, ..} = do
   appInstanceName <- extractField $ TM.lookup @"appInstanceName" richMsgMap
   let logObj =
         J.object
-          [ "timestamp" .= (C.timeToDatetime <$> timestamp),
+          [ "timestamp" .= timestamp,
             "appInstanceName" .= appInstanceName,
             "severity" .= show msgSeverity,
             "trace" .= showSourceLoc msgStack,
@@ -64,11 +65,11 @@ fmtRichMessage RichMsg {richMsgMsg = Msg {..}, ..} = do
           ]
   pure $ LBS.toStrict $ J.encode logObj
 
--- TODO add logging to file support
 mkLogActionIO :: MonadIO m => Conf.LoggerConfig -> LogAction m Message
 mkLogActionIO conf@Conf.LoggerConfig {..} =
   filterBySeverity logLevel msgSeverity $
     upgradeMessageAction (fieldMapIO conf) $
-      cmapM fmtRichMessage logger
+      cmapM fmtRichMessage (stdout <> file)
   where
-    logger = if logToStdout then logByteStringStdout else mempty
+    stdout = if logToStdout then logByteStringStdout else mempty
+    file = maybe mempty logByteStringHandle logToFile
