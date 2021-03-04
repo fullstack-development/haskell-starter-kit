@@ -1,4 +1,4 @@
-module Config
+module AppName.Config
   ( Config,
     C.require,
     C.lookup,

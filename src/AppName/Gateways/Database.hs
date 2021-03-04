@@ -4,10 +4,10 @@ module AppName.Gateways.Database
   )
 where
 
+import qualified AppName.Config as C
 import AppName.Gateways.Database.Connection as Exports
 import AppName.Gateways.Database.Setup as Exports
 import AppName.Gateways.Database.Tables.User as Exports
-import qualified Config as C
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Database.Persist.Postgresql
 import Ext.Data.Env (Env (..))

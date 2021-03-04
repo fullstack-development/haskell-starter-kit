@@ -5,8 +5,8 @@ module AppName.Gateways.Database.Setup
   )
 where
 
+import qualified AppName.Config as C
 import AppName.Gateways.Database.Connection (createPgConnString)
-import qualified Config as C
 import Control.Exception.Safe (MonadMask, bracket)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.IO.Unlift (MonadUnliftIO)

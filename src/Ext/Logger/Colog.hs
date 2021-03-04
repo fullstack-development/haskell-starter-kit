@@ -4,7 +4,7 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module Logger.Colog
+module Ext.Logger.Colog
   ( module Export,
     fieldMapIO,
     fieldMapM,
@@ -24,7 +24,7 @@ import qualified Data.Time as Time
 import qualified Data.TypeRepMap as TM
 import qualified Ext.Data.Time as Clock
 import qualified Ext.Data.Time as Time
-import qualified Logger.Config as Conf
+import qualified Ext.Logger.Config as Conf
 
 type instance FieldType "timestamp" = Time.UTCTime
 

@@ -3,17 +3,17 @@ module Lib
   )
 where
 
+import qualified AppName.Config as C
 import AppName.Gateways.Database.Setup (withDbPool, withDbPoolDebug)
 import AppName.Gateways.Database.Tables.User (createUserRecord, loadUserById)
 import qualified Colog as Log
-import qualified Config as C
 import Control.Monad.IO.Unlift (liftIO)
 import qualified Data.ByteString as BS
 import Data.Functor.Contravariant (Contravariant (contramap))
 import Database.Persist.Postgresql
 import Ext.Data.Env (Env (..))
-import qualified Logger.Colog as Log
-import qualified Logger.Config as Log
+import qualified Ext.Logger.Colog as Log
+import qualified Ext.Logger.Config as Log
 
 runDefaultExample :: IO ()
 runDefaultExample =

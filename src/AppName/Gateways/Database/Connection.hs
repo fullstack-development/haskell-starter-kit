@@ -3,7 +3,7 @@ module AppName.Gateways.Database.Connection
   )
 where
 
-import Config (Config)
+import AppName.Config (Config)
 import qualified Data.Configurator as C
 import Database.Persist.Postgresql (ConnectionString)
 
