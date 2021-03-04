@@ -2,3 +2,10 @@
 .stack-work/
 *~
 stack.yaml.lock
+
+# Auth key
+auth-key
+
+# Local config
+local.*.conf
+local.conf
