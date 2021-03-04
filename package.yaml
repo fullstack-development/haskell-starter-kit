@@ -52,6 +52,9 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - haskell-starter-kit
+    when: # workaround from https://github.com/sol/hpack/issues/303
+    - condition: false
+      other-modules: Paths_haskell_starter_kit
 
 tests:
   haskell-starter-kit-test:
@@ -63,3 +66,6 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - haskell-starter-kit
+    when: # workaround from https://github.com/sol/hpack/issues/303
+    - condition: false
+      other-modules: Paths_haskell_starter_kit
