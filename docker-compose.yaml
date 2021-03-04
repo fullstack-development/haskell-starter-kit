@@ -1,5 +1,7 @@
 version: "3.3"
 services:
+  # connect to 5431 port to use db
+  # psql -U testUser -d metaDb -p 5431 -h 127.0.0.1 -W
   metalamp-db-test:
     image: postgres:latest
     environment:
