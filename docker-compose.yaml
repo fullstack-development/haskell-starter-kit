@@ -1,0 +1,11 @@
+version: "3.3"
+services:
+  metalamp-db-test:
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=testUser
+      - POSTGRES_PASSWORD=testPassword
+      - POSTGRES_DB=metaDb
+      - POSTGRES_HOST_AUTH_METHOD=md5
+    ports:
+      - 5431:5432
