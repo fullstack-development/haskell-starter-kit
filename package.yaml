@@ -25,13 +25,37 @@ dependencies:
 - bytestring
 - text
 - time
+- mtl
+- unliftio-core
+- unliftio
+- safe-exceptions
 - typerep-map
+
+- configurator
+- resourcet
+- resource-pool
 
 # Logger
 - co-log
+- monad-logger
 
-# Serializing
+# Database
+- postgresql-simple
+- persistent
+- persistent-postgresql
+- persistent-template
+- esqueleto
+
+# Web
 - aeson
+- warp
+- wai-logger
+- wai-cors
+- servant-client
+- servant-options
+- servant-server
+- http-client
+- http-client-tls
 
 default-extensions:
 - RecordWildCards
@@ -40,24 +64,12 @@ default-extensions:
 - FlexibleInstances
 - ScopedTypeVariables
 - ExplicitForAll
+- TypeOperators
+- DeriveGeneric
 
 library:
   source-dirs: src
-  dependencies:
-    - time
-    - mtl
-    - unliftio-core
-    - unliftio
-    - safe-exceptions
-    - configurator
-    - resourcet
-    - monad-logger
-    - resource-pool
-    - postgresql-simple
-    - persistent
-    - persistent-postgresql
-    - persistent-template
-    - esqueleto
+
 
 executables:
   haskell-starter-kit-exe:

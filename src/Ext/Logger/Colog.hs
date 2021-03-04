@@ -69,7 +69,6 @@ mkLogActionIO :: MonadIO m => Conf.LoggerConfig -> LogAction m Message
 mkLogActionIO conf@Conf.LoggerConfig {..} =
   filterBySeverity logLevel msgSeverity $
     upgradeMessageAction (fieldMapIO conf) $
-      cmapM fmtRichMessage (stdout <> file)
+      cmapM fmtRichMessage stdout
   where
     stdout = if logToStdout then logByteStringStdout else mempty
-    file = maybe mempty logByteStringHandle logToFile
