@@ -38,6 +38,7 @@ default-extensions:
 - OverloadedStrings
 - FlexibleContexts
 - FlexibleInstances
+- StandaloneDeriving
 - ScopedTypeVariables
 - ExplicitForAll
 
