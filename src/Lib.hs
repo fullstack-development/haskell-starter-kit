@@ -4,7 +4,7 @@ module Lib
 where
 
 import AppName.Gateways.Database.Setup (withDbPool, withDbPoolDebug)
-import AppName.Gateways.Database.Tables.User (createUserRecord)
+import AppName.Gateways.Database.Tables.User (createUserRecord, loadUserById)
 import qualified Colog as Log
 import qualified Config as C
 import Control.Monad.IO.Unlift (liftIO)
@@ -16,15 +16,17 @@ import qualified Logger.Colog as Log
 import qualified Logger.Config as Log
 
 runDefaultExample :: IO ()
-runDefaultExample = do
-  config <- C.retrieveConfig Dev
-
-  Log.usingLoggerT (Log.mkLogActionIO logConf) $ runDBExample config Dev
+runDefaultExample =
+  Log.usingLoggerT (Log.mkLogActionIO logConf) $ do
+    config <- liftIO $ C.retrieveConfig Dev
+    runLogExample
+    runDBExample config Dev
+    Log.logInfo "Finishing application..."
 
 logConf :: Log.LoggerConfig
 logConf =
   Log.LoggerConfig
-    { appInstanceName = "MetaApp",
+    { appInstanceName = "AppName",
       logToStdout = True,
       logToFile = Nothing,
       logLevel = Log.Debug
@@ -40,11 +42,13 @@ runDBExample config env =
           dbExample pool
   where
     dbExample pool = liftIO . flip runSqlPersistMPool pool $ do
-      createUserRecord "+7111"
+      (usedId, _) <- createUserRecord "+79990424242"
+      user <- loadUserById usedId
+      liftIO $ print user
       pure ()
 
 -- type WithLog env msg m = (MonadReader env m, HasLog env msg m)
-example :: Log.WithLog env Log.Message m => m ()
-example = do
-  Log.logDebug "Starting application..."
-  Log.logInfo "Finishing application..."
+runLogExample :: Log.WithLog env Log.Message m => m ()
+runLogExample = do
+  Log.logInfo "Starting application..."
+  Log.logDebug "Here is how we work!"

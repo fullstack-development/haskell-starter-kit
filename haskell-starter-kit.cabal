@@ -4,11 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
-<<<<<<< HEAD
--- hash: 91b191c50bf4acaa3a94256ab638a28dce3bb2bc8f90b4ced6ab44c83575829b
-=======
--- hash: 62c1baf1ef52027475181b0e8094a5f2f1befc4aee0aa41a6fd8938f71adfb35
->>>>>>> origin/master
+-- hash: d44ec8ff3e2cbdcb0ed52e0e2b297d6171c5368d507617bbf89c9fc4efc41567
 
 name:           haskell-starter-kit
 version:        0.1.0.0
@@ -31,6 +27,7 @@ source-repository head
 
 library
   exposed-modules:
+      AppName.Gateways.Database
       AppName.Gateways.Database.Connection
       AppName.Gateways.Database.Setup
       AppName.Gateways.Database.Tables.User
