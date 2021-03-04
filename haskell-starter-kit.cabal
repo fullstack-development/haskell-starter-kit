@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 8573be6924395ff38a453772d07cbda4f8df8884b971481810c2316c31997590
+-- hash: 62c1baf1ef52027475181b0e8094a5f2f1befc4aee0aa41a6fd8938f71adfb35
 
 name:           haskell-starter-kit
 version:        0.1.0.0
@@ -40,10 +40,10 @@ library
       aeson
     , base >=4.7 && <5
     , bytestring
-    , chronos
     , co-log
     , mtl
     , text
+    , time
     , typerep-map
   default-language: Haskell2010
 
@@ -57,11 +57,11 @@ executable haskell-starter-kit-exe
       aeson
     , base >=4.7 && <5
     , bytestring
-    , chronos
     , co-log
     , haskell-starter-kit
     , mtl
     , text
+    , time
     , typerep-map
   if false
     other-modules:
@@ -79,11 +79,11 @@ test-suite haskell-starter-kit-test
       aeson
     , base >=4.7 && <5
     , bytestring
-    , chronos
     , co-log
     , haskell-starter-kit
     , mtl
     , text
+    , time
     , typerep-map
   if false
     other-modules:

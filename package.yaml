@@ -24,7 +24,7 @@ dependencies:
 - mtl
 - bytestring
 - text
-- chronos
+- time
 - typerep-map
 
 # Logger

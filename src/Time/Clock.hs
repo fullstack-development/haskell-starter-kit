@@ -3,16 +3,16 @@ module Time.Clock
   , now
   ) where
 
-import qualified Chronos                as C
+import qualified Data.Time                as Time
 import           Control.Monad.IO.Class (MonadIO (..))
 
 class (Monad m) =>
       MonadClock m
   where
-  getCurrentTime :: m C.Time
+  getCurrentTime :: m Time.UTCTime
 
 instance MonadClock IO where
-  getCurrentTime = C.now
+  getCurrentTime = Time.getCurrentTime
 
-now :: MonadIO m => m C.Time
+now :: MonadIO m => m Time.UTCTime
 now = liftIO getCurrentTime
