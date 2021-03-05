@@ -1,6 +1,6 @@
 module Main where
 
-import Lib
+import Lib (runDefaultExample)
 
 main :: IO ()
-main = someFunc
+main = runDefaultExample

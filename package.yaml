@@ -38,11 +38,27 @@ default-extensions:
 - OverloadedStrings
 - FlexibleContexts
 - FlexibleInstances
+- StandaloneDeriving
 - ScopedTypeVariables
 - ExplicitForAll
 
 library:
   source-dirs: src
+  dependencies:
+    - time
+    - mtl
+    - unliftio-core
+    - unliftio
+    - safe-exceptions
+    - configurator
+    - resourcet
+    - monad-logger
+    - resource-pool
+    - postgresql-simple
+    - persistent
+    - persistent-postgresql
+    - persistent-template
+    - esqueleto
 
 executables:
   haskell-starter-kit-exe:
