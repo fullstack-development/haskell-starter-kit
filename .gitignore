@@ -8,6 +8,8 @@ stack.yaml.lock
 
 # Auth key
 auth-key
+./keys/*
+!./keys/.git-keep
 
 # Local config
 local.*.conf

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d09cb4594a111d619be5e89ee62513e6014b5210d39f0661b9d5bce5e045f735
+-- hash: 0a41e3cd037caa64d4a35f3e7c8ed3403e19de03fcece69eff970aad31bf2c46
 
 name:           haskell-starter-kit
 version:        0.1.0.0
@@ -29,16 +29,27 @@ library
   exposed-modules:
       AppName.API
       AppName.AppHandle
+      AppName.Auth
+      AppName.Auth.Combinators
+      AppName.Auth.Commands
+      AppName.Auth.Instances
+      AppName.Auth.User
       AppName.Config
       AppName.Gateways.Database
       AppName.Gateways.Database.Connection
       AppName.Gateways.Database.Setup
       AppName.Gateways.Database.Tables.User
+      AppName.Gateways.Endpoints.FakeLogin
       AppName.Gateways.Endpoints.GetUsers
+      AppName.PhoneVerification.API
+      AppName.PhoneVerification.Endpoint
+      AppName.PhoneVerification.Model
+      AppName.PhoneVerification.Storage
       AppName.Serializers.User
       AppName.Server
       Ext.Data.Aeson
       Ext.Data.Env
+      Ext.Data.Text
       Ext.Data.Time
       Ext.Logger.Colog
       Ext.Logger.Config
@@ -54,26 +65,36 @@ library
     , bytestring
     , co-log
     , configurator
+    , containers
     , esqueleto
     , http-client
     , http-client-tls
+    , jose
     , monad-logger
     , mtl
     , persistent
     , persistent-postgresql
     , persistent-template
     , postgresql-simple
+    , random
+    , random-shuffle
     , resource-pool
     , resourcet
     , safe-exceptions
+    , servant-auth
+    , servant-auth-server
     , servant-client
+    , servant-foreign
     , servant-options
     , servant-server
+    , stm
     , text
     , time
     , typerep-map
     , unliftio
     , unliftio-core
+    , uuid
+    , wai
     , wai-cors
     , wai-logger
     , warp
@@ -91,27 +112,37 @@ executable haskell-starter-kit-exe
     , bytestring
     , co-log
     , configurator
+    , containers
     , esqueleto
     , haskell-starter-kit
     , http-client
     , http-client-tls
+    , jose
     , monad-logger
     , mtl
     , persistent
     , persistent-postgresql
     , persistent-template
     , postgresql-simple
+    , random
+    , random-shuffle
     , resource-pool
     , resourcet
     , safe-exceptions
+    , servant-auth
+    , servant-auth-server
     , servant-client
+    , servant-foreign
     , servant-options
     , servant-server
+    , stm
     , text
     , time
     , typerep-map
     , unliftio
     , unliftio-core
+    , uuid
+    , wai
     , wai-cors
     , wai-logger
     , warp
@@ -133,27 +164,37 @@ test-suite haskell-starter-kit-test
     , bytestring
     , co-log
     , configurator
+    , containers
     , esqueleto
     , haskell-starter-kit
     , http-client
     , http-client-tls
+    , jose
     , monad-logger
     , mtl
     , persistent
     , persistent-postgresql
     , persistent-template
     , postgresql-simple
+    , random
+    , random-shuffle
     , resource-pool
     , resourcet
     , safe-exceptions
+    , servant-auth
+    , servant-auth-server
     , servant-client
+    , servant-foreign
     , servant-options
     , servant-server
+    , stm
     , text
     , time
     , typerep-map
     , unliftio
     , unliftio-core
+    , uuid
+    , wai
     , wai-cors
     , wai-logger
     , warp

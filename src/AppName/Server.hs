@@ -7,10 +7,13 @@ where
 
 import AppName.API (API, apiType)
 import AppName.AppHandle (AppHandle (..), withAppHandle)
+import AppName.Auth (ProtectedServantJWTCtx)
 import qualified AppName.Config as C
 import AppName.Gateways.Database (withDbPool, withDbPoolDebug)
+import AppName.Gateways.Endpoints.FakeLogin (fakeLoginEndpoint)
 import AppName.Gateways.Endpoints.GetUsers
-  ( getUserByIdEndpoint,
+  ( getCurrentUserEndpoint,
+    getUserByIdEndpoint,
   )
 import Control.Exception.Safe (MonadThrow, throw, try)
 import Control.Monad (unless)
@@ -37,30 +40,36 @@ import Network.Wai.Middleware.Cors
   )
 import Network.Wai.Middleware.Servant.Options (provideOptions)
 import Servant
-  ( Handler (Handler),
+  ( Context (EmptyContext, (:.)),
+    Handler (Handler),
     Server,
     ServerT,
     err404,
-    hoistServer,
+    hoistServerWithContext,
     serve,
     serveWithContext,
     (:<|>) (..),
   )
+import qualified Servant.Auth.Server as SAS
 
 handler ::
   (MonadIO m, MonadThrow m) =>
+  SAS.JWTSettings ->
   AppHandle ->
   ServerT API m
-handler h = testEndpoint :<|> getUserByIdEndpoint h
-  where
-    testEndpoint param =
-      pure $ "You sent me " <> param
+handler jwtSettings h = fakeLoginEndpoint jwtSettings :<|> getUserByIdEndpoint h :<|> getCurrentUserEndpoint h
 
 catchServantErrorsFromIO :: ServerT API IO -> Server API
-catchServantErrorsFromIO = hoistServer apiType (Handler . ExceptT . try)
+catchServantErrorsFromIO =
+  hoistServerWithContext
+    apiType
+    (Proxy :: ProtectedServantJWTCtx)
+    (Handler . ExceptT . try)
 
 runServer :: Env -> C.Config -> IO ()
 runServer env config = do
+  filePath <- C.getKeysFilePath config
+  authKey <- SAS.readKey filePath
   port <- C.getPort config
   let serverSettings =
         setPort port $
@@ -68,15 +77,17 @@ runServer env config = do
             (putStrLn ("listening on port " <> show port))
             defaultSettings
       policy = simpleCorsResourcePolicy {corsRequestHeaders = ["content-type"]}
+      jwtSettings = SAS.defaultJWTSettings authKey
+      cfg = SAS.defaultCookieSettings :. jwtSettings :. EmptyContext
       server :: MonadIO (m IO) => Settings -> AppHandle -> m IO ()
       server settings ah =
         liftIO
           . runSettings settings
           . cors (const $ Just policy)
           . provideOptions apiType
-          . serve apiType
+          . serveWithContext apiType cfg
           . catchServantErrorsFromIO
-          . handler
+          . handler jwtSettings
           $ ah
   liftIO $ withAppHandle env $ server serverSettings
 
