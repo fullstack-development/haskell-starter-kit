@@ -28,7 +28,6 @@ logConf =
   Log.LoggerConfig
     { appInstanceName = "AppName",
       logToStdout = True,
-      logToFile = Nothing,
       logLevel = Log.Debug
     }
 

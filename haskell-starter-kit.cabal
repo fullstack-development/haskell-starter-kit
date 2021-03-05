@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1d5721727d0ec28826caa8a9913ff8b9cf55fd4ee4eff2c713b2c3d887e8f194
+-- hash: c5849e0c63ec6fb34b5ad173dc1fa58065c8342fab527f7e9092b22d43c924fe
 
 name:           haskell-starter-kit
 version:        0.1.0.0
@@ -27,11 +27,17 @@ source-repository head
 
 library
   exposed-modules:
+      AppName.API
+      AppName.AppHandle
       AppName.Config
       AppName.Gateways.Database
       AppName.Gateways.Database.Connection
       AppName.Gateways.Database.Setup
       AppName.Gateways.Database.Tables.User
+      AppName.Gateways.Endpoints.GetUsers
+      AppName.Serializers.User
+      AppName.Server
+      Ext.Data.Aeson
       Ext.Data.Env
       Ext.Data.Time
       Ext.Logger.Colog
@@ -41,7 +47,7 @@ library
       Paths_haskell_starter_kit
   hs-source-dirs:
       src
-  default-extensions: RecordWildCards OverloadedStrings FlexibleContexts FlexibleInstances StandaloneDeriving ScopedTypeVariables ExplicitForAll
+  default-extensions: RecordWildCards OverloadedStrings FlexibleContexts FlexibleInstances StandaloneDeriving ScopedTypeVariables ExplicitForAll TypeOperators DeriveGeneric
   build-depends:
       aeson
     , base >=4.7 && <5
@@ -49,6 +55,8 @@ library
     , co-log
     , configurator
     , esqueleto
+    , http-client
+    , http-client-tls
     , monad-logger
     , mtl
     , persistent
@@ -58,29 +66,55 @@ library
     , resource-pool
     , resourcet
     , safe-exceptions
+    , servant-client
+    , servant-options
+    , servant-server
     , text
     , time
     , typerep-map
     , unliftio
     , unliftio-core
+    , wai-cors
+    , wai-logger
+    , warp
   default-language: Haskell2010
 
 executable haskell-starter-kit-exe
   main-is: Main.hs
   hs-source-dirs:
       app
-  default-extensions: RecordWildCards OverloadedStrings FlexibleContexts FlexibleInstances StandaloneDeriving ScopedTypeVariables ExplicitForAll
+  default-extensions: RecordWildCards OverloadedStrings FlexibleContexts FlexibleInstances StandaloneDeriving ScopedTypeVariables ExplicitForAll TypeOperators DeriveGeneric
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
     , base >=4.7 && <5
     , bytestring
     , co-log
+    , configurator
+    , esqueleto
     , haskell-starter-kit
+    , http-client
+    , http-client-tls
+    , monad-logger
     , mtl
+    , persistent
+    , persistent-postgresql
+    , persistent-template
+    , postgresql-simple
+    , resource-pool
+    , resourcet
+    , safe-exceptions
+    , servant-client
+    , servant-options
+    , servant-server
     , text
     , time
     , typerep-map
+    , unliftio
+    , unliftio-core
+    , wai-cors
+    , wai-logger
+    , warp
   if false
     other-modules:
         Paths_haskell_starter_kit
@@ -91,18 +125,38 @@ test-suite haskell-starter-kit-test
   main-is: Spec.hs
   hs-source-dirs:
       test
-  default-extensions: RecordWildCards OverloadedStrings FlexibleContexts FlexibleInstances StandaloneDeriving ScopedTypeVariables ExplicitForAll
+  default-extensions: RecordWildCards OverloadedStrings FlexibleContexts FlexibleInstances StandaloneDeriving ScopedTypeVariables ExplicitForAll TypeOperators DeriveGeneric
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
     , base >=4.7 && <5
     , bytestring
     , co-log
+    , configurator
+    , esqueleto
     , haskell-starter-kit
+    , http-client
+    , http-client-tls
+    , monad-logger
     , mtl
+    , persistent
+    , persistent-postgresql
+    , persistent-template
+    , postgresql-simple
+    , resource-pool
+    , resourcet
+    , safe-exceptions
+    , servant-client
+    , servant-options
+    , servant-server
     , text
     , time
     , typerep-map
+    , unliftio
+    , unliftio-core
+    , wai-cors
+    , wai-logger
+    , warp
   if false
     other-modules:
         Paths_haskell_starter_kit
