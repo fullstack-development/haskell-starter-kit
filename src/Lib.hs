@@ -1,27 +1,53 @@
 module Lib
-  ( someFunc
-  ) where
+  ( runDefaultExample,
+  )
+where
 
+import qualified AppName.Config as C
+import AppName.Gateways.Database.Setup (withDbPool, withDbPoolDebug)
+import AppName.Gateways.Database.Tables.User (createUserRecord, loadUserById)
 import qualified Colog as Log
+import Control.Monad.IO.Unlift (liftIO)
 import qualified Data.ByteString as BS
-import Data.Functor.Contravariant (Contravariant(contramap))
-import qualified Logger.Colog as Log
-import qualified Logger.Config as Log
+import Data.Functor.Contravariant (Contravariant (contramap))
+import Database.Persist.Postgresql
+import Ext.Data.Env (Env (..))
+import qualified Ext.Logger.Colog as Log
+import qualified Ext.Logger.Config as Log
 
-someFunc :: IO ()
-someFunc = Log.usingLoggerT (Log.mkLogActionIO conf) example
+runDefaultExample :: IO ()
+runDefaultExample =
+  Log.usingLoggerT (Log.mkLogActionIO logConf) $ do
+    config <- liftIO $ C.retrieveConfig Dev
+    runLogExample
+    runDBExample config Dev
+    Log.logInfo "Finishing application..."
 
-conf :: Log.LoggerConfig
-conf =
+logConf :: Log.LoggerConfig
+logConf =
   Log.LoggerConfig
-    { appInstanceName = "MetaApp"
-    , logToStdout = True
-    , logToFile = Nothing
-    , logLevel = Log.Debug
+    { appInstanceName = "AppName",
+      logToStdout = True,
+      logLevel = Log.Debug
     }
 
+runDBExample config env =
+  case env of
+    Prod -> liftIO . withDbPool config $ \pool -> dbExample pool
+    _ ->
+      liftIO
+        . withDbPoolDebug config
+        $ \pool ->
+          dbExample pool
+  where
+    dbExample pool = liftIO . flip runSqlPersistMPool pool $ do
+      (usedId, _) <- createUserRecord "+79990424242"
+      user <- loadUserById usedId
+      liftIO $ print user
+      pure ()
+
 -- type WithLog env msg m = (MonadReader env m, HasLog env msg m)
-example :: Log.WithLog env Log.Message m => m ()
-example = do
-  Log.logDebug "Starting application..."
-  Log.logInfo "Finishing application..."
+runLogExample :: Log.WithLog env Log.Message m => m ()
+runLogExample = do
+  Log.logInfo "Starting application..."
+  Log.logDebug "Here is how we work!"

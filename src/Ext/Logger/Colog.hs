@@ -1,28 +1,30 @@
-{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE OverloadedLabels #-}
 {-# LANGUAGE OverloadedLists #-}
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 
-module Logger.Colog
-  ( module Export
-  , fieldMapIO
-  , fieldMapM
-  , fmtRichMessage
-  , mkLogActionIO
-  ) where
+module Ext.Logger.Colog
+  ( module Export,
+    fieldMapIO,
+    fieldMapM,
+    fmtRichMessage,
+    mkLogActionIO,
+  )
+where
 
-import qualified Data.Time                as Time
 import Colog as Export
 import Control.Monad.IO.Class (MonadIO)
-import qualified Data.Aeson as J
 import Data.Aeson ((.=))
+import qualified Data.Aeson as J
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Text as T
+import qualified Data.Time as Time
 import qualified Data.TypeRepMap as TM
-import qualified Logger.Config as Conf
-import qualified Time.Clock as Clock
+import qualified Ext.Data.Time as Clock
+import qualified Ext.Data.Time as Time
+import qualified Ext.Logger.Config as Conf
 
 type instance FieldType "timestamp" = Time.UTCTime
 
@@ -35,13 +37,15 @@ fieldMapIO :: MonadIO m => Conf.LoggerConfig -> FieldMap m
 fieldMapIO conf = timestampedFieldMapIO <> fieldMap conf
 
 timestampedFieldMapM ::
-     forall m. Clock.MonadClock m
-  => FieldMap m
+  forall m.
+  Clock.MonadClock m =>
+  FieldMap m
 timestampedFieldMapM = [#timestamp Clock.getCurrentTime]
 
 timestampedFieldMapIO ::
-     forall m. MonadIO m
-  => FieldMap m
+  forall m.
+  MonadIO m =>
+  FieldMap m
 timestampedFieldMapIO = [#timestamp Clock.now]
 
 fieldMap :: Monad m => Conf.LoggerConfig -> FieldMap m
@@ -53,19 +57,18 @@ fmtRichMessage RichMsg {richMsgMsg = Msg {..}, ..} = do
   appInstanceName <- extractField $ TM.lookup @"appInstanceName" richMsgMap
   let logObj =
         J.object
-          [ "timestamp" .= timestamp
-          , "appInstanceName" .= appInstanceName
-          , "severity" .= show msgSeverity
-          , "trace" .= showSourceLoc msgStack
-          , "message" .= msgText
+          [ "timestamp" .= timestamp,
+            "appInstanceName" .= appInstanceName,
+            "severity" .= show msgSeverity,
+            "trace" .= showSourceLoc msgStack,
+            "message" .= msgText
           ]
   pure $ LBS.toStrict $ J.encode logObj
 
 mkLogActionIO :: MonadIO m => Conf.LoggerConfig -> LogAction m Message
-mkLogActionIO conf@Conf.LoggerConfig {..}=
+mkLogActionIO conf@Conf.LoggerConfig {..} =
   filterBySeverity logLevel msgSeverity $
-  upgradeMessageAction (fieldMapIO conf) $
-  cmapM fmtRichMessage (stdout <> file)
+    upgradeMessageAction (fieldMapIO conf) $
+      cmapM fmtRichMessage stdout
   where
     stdout = if logToStdout then logByteStringStdout else mempty
-    file = maybe mempty logByteStringHandle logToFile
