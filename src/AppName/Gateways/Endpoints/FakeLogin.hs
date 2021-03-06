@@ -2,7 +2,7 @@
 
 module AppName.Gateways.Endpoints.FakeLogin
   ( LoginResponse,
-    LoginAPIDetached,
+    LoginData,
     fakeLoginEndpoint,
   )
 where
@@ -35,9 +35,6 @@ data LoginResponse
   = LoginResponseSuccess BL.ByteString
   | LoginResponseError Error
   deriving (Eq, Show, Generic)
-
-type LoginAPIDetached =
-  "auth" :> "fake-login" :> ReqBody '[JSON] LoginData :> Post '[JSON] LoginResponse
 
 instance J.ToJSON LoginResponse where
   toJSON (LoginResponseSuccess token) =
