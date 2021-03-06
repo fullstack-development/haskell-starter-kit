@@ -1,6 +1,6 @@
-module AppName.PhoneVerification.Storage where
+module AppName.Gateways.PhoneVerificationStorage where
 
-import AppName.PhoneVerification.Model (Phone, WaitConfirmationEntry)
+import AppName.Domain.PhoneVerification (Phone, WaitConfirmationEntry)
 import Control.Concurrent.STM
   ( TVar,
     atomically,

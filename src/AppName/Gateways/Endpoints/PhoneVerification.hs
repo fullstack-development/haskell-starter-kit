@@ -2,7 +2,7 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module AppName.PhoneVerification.Endpoint
+module AppName.Gateways.Endpoints.PhoneVerification
   ( Externals (..),
     PhoneAuthAPI,
     phoneAuthAPItype,
@@ -10,11 +10,10 @@ module AppName.PhoneVerification.Endpoint
   )
 where
 
+import AppName.API.PhoneVerification
 import AppName.Auth.User (AuthenticatedUser)
-import AppName.PhoneVerification.API
-import AppName.PhoneVerification.Model (isConfirmReqExpired)
-import qualified AppName.PhoneVerification.Model as Model
-import qualified AppName.PhoneVerification.Storage as S
+import qualified AppName.Domain.PhoneVerification as Model
+import qualified AppName.Gateways.PhoneVerificationStorage as S
 import Control.Exception.Safe (MonadThrow, throw)
 import Control.Monad (unless, when)
 import Control.Monad.Except (runExceptT, throwError)
@@ -87,7 +86,7 @@ requestCode Handle {..} PhoneConfirmationRequest {..} =
     phone <- either invalidPhone pure $ Model.checkPhone spcrPhone
     time <- liftIO getCurrentTime
     mbExisting <- S.getFromStorage phone hStorage
-    traverse_ (bool tooManyReqs (pure ()) . isConfirmReqExpired time) mbExisting
+    traverse_ (bool tooManyReqs (pure ()) . Model.isConfirmReqExpired time) mbExisting
     code <- Model.genConfirmationCode phone hParams <$> liftIO newStdGen
     let waiting = Model.WaitConfirmationEntry phone code time
     S.setToStorage phone waiting hStorage
@@ -123,14 +122,14 @@ tryConfirmCode Handle {..} CodeConfirmationRequest {..} =
         removeWaiter = S.removeFromStorage phone hStorage
     when (isExpired || isCodeCorrect) removeWaiter
     when isExpired codeConfirmTimeExpired
-    -- unless
-    --   isCodeCorrect
-    --   incorrectCode -- TODO: add attempts count
-    -- logDebug logger $
-    -- "Retrieving user by phone "
-    -- <> tshow tccrPhone
-    -- <> " uuid "
-    -- <> tshow tccrUuid
+    unless
+      isCodeCorrect
+      incorrectCode -- TODO: add attempts count
+      -- logDebug logger $
+      -- "Retrieving user by phone "
+      -- <> tshow tccrPhone
+      -- <> " uuid "
+      -- <> tshow tccrUuid
     uuid <-
       maybe
         ( throwError $
@@ -153,12 +152,12 @@ tryConfirmCode Handle {..} CodeConfirmationRequest {..} =
       -- logError logger $ "User not found: " <> tshow e
       throwError $
         CodeConfirmationResponseFail "userNotFound" "Can't find user."
-    -- incorrectCode = do
-    --   logError logger $ "Entered code is incorrect"
-    --   throwError $
-    --     CodeConfirmationResponseFail
-    --       "incorrectCode"
-    --       "Provided code was incorrect."
+    incorrectCode = do
+      -- logError logger $ "Entered code is incorrect"
+      throwError $
+        CodeConfirmationResponseFail
+          "incorrectCode"
+          "Provided code was incorrect."
     codeConfirmTimeExpired = do
       -- logError logger $ "Entered code is expired"
       throwError $
@@ -174,10 +173,3 @@ tryConfirmCode Handle {..} CodeConfirmationRequest {..} =
       throwError $
         CodeConfirmationResponseFail "invalidPhone" "Phone is invalid."
     run action = runExceptT action >>= either pure pure
-
--- NB: for typechecking
-_localApp :: Application
-_localApp req h = do
-  let mockExternals = Externals undefined undefined undefined undefined
-  impl <- phoneAuthAPI Model.defParams mockExternals
-  serve phoneAuthAPItype impl req h

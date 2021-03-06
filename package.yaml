@@ -106,6 +106,17 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - haskell-starter-kit
+
+    - hspec
+    - hspec-core
+    - hspec-wai
+    - tasty
+    - tasty-hspec
+
+    # extra
+    - directory
+    - http-types
+    - wai-extra
     when: # workaround from https://github.com/sol/hpack/issues/303
     - condition: false
       other-modules: Paths_haskell_starter_kit

@@ -1,8 +1,8 @@
 {-# LANGUAGE DataKinds #-}
 
-module AppName.PhoneVerification.API where
+module AppName.API.PhoneVerification where
 
-import qualified AppName.PhoneVerification.Model as Model
+import qualified AppName.Domain.PhoneVerification as Model
 import qualified Data.Aeson as J
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.Text as T

@@ -1,7 +1,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module AppName.PhoneVerification.Model
+module AppName.Domain.PhoneVerification
   ( Code,
     UncheckedPhone (..),
     CheckedPhone,
@@ -29,8 +29,6 @@ import Text.Read (readMaybe)
 
 type PhoneNumber = T.Text
 
--- TODO: probably we should move it to User module?
--- any phone (with no guarantess on format)
 newtype UncheckedPhone
   = UncheckedPhone PhoneNumber
   deriving (Eq, Show, Ord)
@@ -118,7 +116,7 @@ instance J.FromJSON WaitConfirmationEntry where
   parseJSON =
     J.withObject "WaitConfirmationEntry" $ \o -> do
       dirtyPhone <- o J..: "phone"
-      eiPhone <- pure $ checkPhone $ UncheckedPhone dirtyPhone
+      let eiPhone = checkPhone $ UncheckedPhone dirtyPhone
       phone <- either (fail . T.unpack) pure eiPhone
       code <- o J..: "code"
       time <- o J..: "time"

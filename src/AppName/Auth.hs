@@ -11,7 +11,7 @@ module AppName.Auth
   )
 where
 
-import AppName.Auth.Instances ()
+import AppName.Auth.ServantInstances ()
 import AppName.Auth.User as Export
 import Control.Exception.Safe (MonadThrow)
 import Control.Monad.IO.Class

@@ -7,10 +7,10 @@ module AppName.API
   )
 where
 
+import AppName.API.User (UserSerializer)
 import AppName.Auth (AuthenticatedUser, ProtectedWithJWT)
 import qualified AppName.Config as C
 import AppName.Gateways.Endpoints.FakeLogin (LoginData, LoginResponse)
-import AppName.Serializers.User (UserSerializer)
 import Data.Proxy (Proxy (..))
 import qualified Data.Text as T
 import Servant (Capture, Get, JSON, Post, ReqBody, (:<|>) (..), (:>))

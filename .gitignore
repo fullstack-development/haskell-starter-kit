@@ -5,11 +5,11 @@
 .stack-work/
 *~
 stack.yaml.lock
+haskell-starter-kit.cabal
 
 # Auth key
-auth-key
-./keys/*
-!./keys/.git-keep
+keys/*
+!keys/.git-keep
 
 # Local config
 local.*.conf

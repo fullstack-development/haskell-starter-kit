@@ -6,6 +6,7 @@ module AppName.Gateways.Endpoints.GetUsers
   )
 where
 
+import AppName.API.User (UserSerializer (..))
 import AppName.AppHandle (AppHandle (..))
 import AppName.Auth (AuthenticatedUser (AuthenticatedClient))
 import AppName.Gateways.Database
@@ -13,7 +14,6 @@ import AppName.Gateways.Database
     User (..),
     loadUserById,
   )
-import AppName.Serializers.User (UserSerializer (..))
 import Control.Exception.Safe (MonadThrow, throw)
 import Control.Monad.IO.Unlift (MonadIO (liftIO))
 import Database.Persist.Postgresql

@@ -3,7 +3,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module AppName.Auth.Instances where
+module AppName.Auth.ServantInstances where
 
 import Data.Proxy (Proxy (..))
 import qualified Data.Text as T
