@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0a41e3cd037caa64d4a35f3e7c8ed3403e19de03fcece69eff970aad31bf2c46
+-- hash: c5849e0c63ec6fb34b5ad173dc1fa58065c8342fab527f7e9092b22d43c924fe
 
 name:           haskell-starter-kit
 version:        0.1.0.0
@@ -58,7 +58,7 @@ library
       Paths_haskell_starter_kit
   hs-source-dirs:
       src
-  default-extensions: RecordWildCards OverloadedStrings FlexibleContexts FlexibleInstances ScopedTypeVariables ExplicitForAll TypeOperators DeriveGeneric
+  default-extensions: RecordWildCards OverloadedStrings FlexibleContexts FlexibleInstances StandaloneDeriving ScopedTypeVariables ExplicitForAll TypeOperators DeriveGeneric
   build-depends:
       aeson
     , base >=4.7 && <5
@@ -104,7 +104,7 @@ executable haskell-starter-kit-exe
   main-is: Main.hs
   hs-source-dirs:
       app
-  default-extensions: RecordWildCards OverloadedStrings FlexibleContexts FlexibleInstances ScopedTypeVariables ExplicitForAll TypeOperators DeriveGeneric
+  default-extensions: RecordWildCards OverloadedStrings FlexibleContexts FlexibleInstances StandaloneDeriving ScopedTypeVariables ExplicitForAll TypeOperators DeriveGeneric
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
@@ -156,7 +156,7 @@ test-suite haskell-starter-kit-test
   main-is: Spec.hs
   hs-source-dirs:
       test
-  default-extensions: RecordWildCards OverloadedStrings FlexibleContexts FlexibleInstances ScopedTypeVariables ExplicitForAll TypeOperators DeriveGeneric
+  default-extensions: RecordWildCards OverloadedStrings FlexibleContexts FlexibleInstances StandaloneDeriving ScopedTypeVariables ExplicitForAll TypeOperators DeriveGeneric
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
