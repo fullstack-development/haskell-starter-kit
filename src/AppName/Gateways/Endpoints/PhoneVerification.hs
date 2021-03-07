@@ -5,8 +5,8 @@
 module AppName.Gateways.Endpoints.PhoneVerification
   ( Externals (..),
     PhoneAuthAPI,
-    phoneAuthAPItype,
-    phoneAuthAPI,
+    phoneVerificationAPItype,
+    phoneVerificationAPI,
   )
 where
 
@@ -23,7 +23,6 @@ import Data.Foldable (traverse_)
 import Data.Proxy (Proxy (..))
 import qualified Data.Text as T
 import Data.Time (getCurrentTime)
-import qualified Data.UUID as UUID
 import Ext.Data.Text (tshow)
 import qualified Ext.Logger.Colog as Log
 import qualified Ext.Logger.Config as Log
@@ -33,7 +32,7 @@ import qualified Servant.Auth.Server as SAS
 import System.Random (newStdGen)
 
 type QueryUser =
-  Model.Phone -> UUID.UUID -> IO (Either T.Text AuthenticatedUser)
+  Model.Phone -> IO AuthenticatedUser
 
 type SendCodeToUser = Model.Phone -> Model.Code -> IO ()
 
@@ -55,15 +54,15 @@ data Handle s = Handle
 
 type MonadHandler m = (MonadIO m, MonadThrow m)
 
-phoneAuthAPItype :: Proxy PhoneAuthAPI
-phoneAuthAPItype = Proxy
+phoneVerificationAPItype :: Proxy PhoneAuthAPI
+phoneVerificationAPItype = Proxy
 
-phoneAuthAPI ::
-  (MonadIO m, MonadHandler m1) =>
+phoneVerificationAPI ::
+  (MonadHandler minternal) =>
   Model.Parameters ->
   Externals ->
-  m (ServerT PhoneAuthAPI m1)
-phoneAuthAPI params Externals {..} = do
+  IO (ServerT PhoneAuthAPI minternal)
+phoneVerificationAPI params Externals {..} = do
   storage :: S.MemoryStorage <- S.mkStorage
   let h =
         Handle
@@ -128,17 +127,7 @@ tryConfirmCode Handle {..} CodeConfirmationRequest {..} =
       -- logDebug logger $
       -- "Retrieving user by phone "
       -- <> tshow tccrPhone
-      -- <> " uuid "
-      -- <> tshow tccrUuid
-    uuid <-
-      maybe
-        ( throwError $
-            CodeConfirmationResponseFail "invalidUUID" $ "Can't parse UUID for CodeConfirmation. Received" <> tccrUuid
-        )
-        pure
-        (UUID.fromText tccrUuid)
-    eiUser <- liftIO $ hRetrieveUserByPhone phone uuid
-    authenticatedUser <- either retrieveUserError pure eiUser
+    authenticatedUser <- liftIO $ hRetrieveUserByPhone phone
     eiToken <- liftIO $ SAS.makeJWT authenticatedUser hJwtSettings Nothing
     -- logInfo logger $ "Token generated for phone " <> tshow tccrPhone
     either internalError (pure . CodeConfirmationResponseSuccess) eiToken
@@ -148,10 +137,6 @@ tryConfirmCode Handle {..} CodeConfirmationRequest {..} =
     --  do
     -- let logMsg = "Error happened during code confirming: " <> tshow e
     -- logError logger logMsg >> throw err500
-    retrieveUserError e = do
-      -- logError logger $ "User not found: " <> tshow e
-      throwError $
-        CodeConfirmationResponseFail "userNotFound" "Can't find user."
     incorrectCode = do
       -- logError logger $ "Entered code is incorrect"
       throwError $

@@ -5,7 +5,7 @@ import AppName.Auth (AuthenticatedUser (AuthenticatedClient), defaultJWTSettings
 import AppName.Auth.Commands (createKey)
 import qualified AppName.Config as C
 import AppName.Domain.PhoneVerification (Code, Phone, codeToText, defParams, phoneToText)
-import AppName.Gateways.Endpoints.PhoneVerification (Externals (..), phoneAuthAPI)
+import AppName.Gateways.Endpoints.PhoneVerification (Externals (..), phoneVerificationAPI)
 import Control.Concurrent.STM
   ( TVar,
     atomically,
@@ -80,9 +80,8 @@ main = do
 api :: Proxy PhoneAuthAPI
 api = Proxy
 
-data MockUser
-  = MockUser
-      Int
+newtype MockUser
+  = MockUser Int
   deriving (Eq, Show)
 
 mkApp :: (Phone -> Code -> IO ()) -> MockUser -> IO Application
@@ -100,12 +99,10 @@ mkApp onSendCode (MockUser userId) = do
           { eLogger = logConf,
             eJwtSettings = defaultJWTSettings authKey,
             eRetrieveUserByPhone =
-              \_p _u ->
-                pure . Right $
-                  AuthenticatedClient userId,
+              \_ -> pure $ AuthenticatedClient userId,
             eSendCodeToUser = onSendCode
           }
-  impl <- phoneAuthAPI defParams mockExternals
+  impl <- phoneVerificationAPI defParams mockExternals
   pure $ serve api impl
 
 jsonHeaders :: [Header]
@@ -156,14 +153,11 @@ confirmCodeUnit codeVar = do
           maybe (error $ "Code not found for " <> T.unpack phone) pure mbCode
         pure . TLE.encodeUtf8 . TL.fromStrict . codeToText $ code
       cleanCodes = atomically $ writeTVar codeVar mempty
-      uuid = "1c7dcccd-9cb9-4852-8f0f-04c47edeaa8f"
   with (mkApp onSendCode authenticatedUser) . after (const cleanCodes) $ do
     let confirm phone code =
           postJsonReq
             "/auth/phone/confirm"
             ( "{\"phone\": \"" <> phone <> "\", \"code\": \"" <> code
-                <> "\", \"uuid\": \""
-                <> uuid
                 <> "\"}"
             )
         requestCode phone =

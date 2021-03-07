@@ -32,7 +32,6 @@ dependencies:
 - typerep-map
 - random
 - random-shuffle
-- uuid
 - stm
 
 - configurator

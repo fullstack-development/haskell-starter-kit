@@ -7,6 +7,7 @@ module AppName.API
   )
 where
 
+import qualified AppName.API.PhoneVerification as Phone
 import AppName.API.User (UserSerializer)
 import AppName.Auth (AuthenticatedUser, ProtectedWithJWT)
 import qualified AppName.Config as C
@@ -22,7 +23,7 @@ data TestResponse = TestResponse
   }
 
 type API =
-  LoginAPIDetached :<|> GetUsersAPI
+  LoginAPIDetached :<|> Phone.PhoneAuthAPI :<|> GetUsersAPI
 
 type LoginAPIDetached =
   "auth" :> "fake-login" :> ReqBody '[JSON] LoginData :> Post '[JSON] LoginResponse

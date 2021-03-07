@@ -40,8 +40,7 @@ instance J.ToJSON PhoneConfirmationResponse where
 
 data CodeConfirmationRequest = CodeConfirmationRequest
   { tccrCode :: Model.Code,
-    tccrPhone :: Model.UncheckedPhone,
-    tccrUuid :: T.Text
+    tccrPhone :: Model.UncheckedPhone
   }
   deriving (Eq, Show)
 
@@ -50,7 +49,6 @@ instance J.FromJSON CodeConfirmationRequest where
     J.withObject "ConfirmCode" $ \o ->
       CodeConfirmationRequest <$> o J..: "code"
         <*> (Model.UncheckedPhone <$> o J..: "phone")
-        <*> o J..: "uuid"
 
 type AccessToken = BL.ByteString
 

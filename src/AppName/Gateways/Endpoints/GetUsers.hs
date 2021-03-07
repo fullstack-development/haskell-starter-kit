@@ -3,16 +3,20 @@
 module AppName.Gateways.Endpoints.GetUsers
   ( getUserByIdEndpoint,
     getCurrentUserEndpoint,
+    getOrCreateUserByPhoneEndpoint,
   )
 where
 
 import AppName.API.User (UserSerializer (..))
 import AppName.AppHandle (AppHandle (..))
 import AppName.Auth (AuthenticatedUser (AuthenticatedClient))
+import qualified AppName.Domain.PhoneVerification as Phone
 import AppName.Gateways.Database
   ( Key (UserKey),
     User (..),
+    createUserRecord,
     loadUserById,
+    loadUserByPhone,
   )
 import Control.Exception.Safe (MonadThrow, throw)
 import Control.Monad.IO.Unlift (MonadIO (liftIO))
@@ -35,6 +39,17 @@ getUserByIdEndpoint AppHandle {..} userId =
               userCreatedAt = userCreatedAt,
               userPhone = userPhone
             }
+
+getOrCreateUserByPhoneEndpoint ::
+  (MonadIO m, MonadThrow m) => AppHandle -> Phone.Phone -> m AuthenticatedUser
+getOrCreateUserByPhoneEndpoint AppHandle {..} phoneNumber =
+  fmap (AuthenticatedClient . fromIntegral . fromSqlKey) $
+    liftIO . flip runSqlPersistMPool appHandleDbPool $ do
+      user <- loadUserByPhone phoneNumber
+      maybe createNewUser (pure . entityKey) user
+  where
+    createNewUser =
+      fst <$> createUserRecord phoneNumber
 
 getCurrentUserEndpoint ::
   (MonadIO m, MonadThrow m) => AppHandle -> SAS.AuthResult AuthenticatedUser -> m (Maybe UserSerializer)
