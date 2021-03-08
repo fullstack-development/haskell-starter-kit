@@ -10,4 +10,5 @@ COPY ./ haskell-starter-kit/
 WORKDIR /haskell-starter-kit/
 RUN stack build
 
+EXPOSE 8080
 CMD [ "stack", "exec", "haskell-starter-kit-exe" ]

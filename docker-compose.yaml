@@ -1,13 +1,33 @@
 version: "3.3"
+
 services:
   # connect to 5431 port to use db
   # psql -U myuser -d appnamedb -p 5431 -h 127.0.0.1 -W
-  metalamp-db-test:
+  db:
     image: postgres:latest
     environment:
-      - POSTGRES_USER=myuser
-      - POSTGRES_PASSWORD=mypass
-      - POSTGRES_DB=appnamedb
-      - POSTGRES_HOST_AUTH_METHOD=md5
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
+      - POSTGRES_HOST_AUTH_METHOD
     ports:
       - 5431:5432
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+
+  backend:
+    depends_on:
+      - db
+    image: starter:latest
+    build:
+      context: ./
+    environment:
+      - POSTGRES_DB
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - DB_HOST
+    ports:
+      - 8080:8080
+
+volumes:
+  pg-data:
