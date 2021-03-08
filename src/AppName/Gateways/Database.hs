@@ -13,7 +13,11 @@ import Database.Persist.Postgresql
 import Ext.Data.Env (Env (..))
 
 migrateAll :: (MonadIO m) => SqlPersistT m ()
-migrateAll = runMigration migrateUser
+migrateAll = mapM_ runMigration allMigrations
+
+allMigrations :: [Migration]
+allMigrations =
+  [migrateUser]
 
 runAllMigrations :: IO ()
 runAllMigrations = do

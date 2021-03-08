@@ -19,6 +19,7 @@ import AppName.Gateways.Endpoints.GetUsers
     getUserByIdEndpoint,
   )
 import qualified AppName.Gateways.Endpoints.PhoneVerification as Phone
+import AppName.Gateways.Endpoints.SaveUsers (saveUserPersonalInfoEndpoint)
 import Control.Exception.Safe (MonadThrow, throw, try)
 import Control.Monad (unless)
 import Control.Monad.Except (ExceptT (ExceptT))
@@ -64,8 +65,9 @@ buildHandlers ::
   mexternal (ServerT API minternal)
 buildHandlers jwtSettings h = do
   phoneVerification <- liftIO buildPhoneVerification
-  pure $ fakeLoginEndpoint jwtSettings :<|> phoneVerification :<|> getUserByIdEndpoint h :<|> getCurrentUserEndpoint h
+  pure $ fakeLoginEndpoint jwtSettings :<|> phoneVerification :<|> getUsers :<|> saveUserPersonalInfoEndpoint h
   where
+    getUsers = getUserByIdEndpoint h :<|> getCurrentUserEndpoint h
     buildPhoneVerification :: IO (ServerT Phone.PhoneAuthAPI minternal)
     buildPhoneVerification =
       Phone.phoneVerificationAPI

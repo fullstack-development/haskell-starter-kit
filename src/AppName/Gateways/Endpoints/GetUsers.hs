@@ -7,9 +7,9 @@ module AppName.Gateways.Endpoints.GetUsers
   )
 where
 
-import AppName.API.User (UserSerializer (..))
+import AppName.API.User (AddressSerializer (..), UserSerializer (..))
 import AppName.AppHandle (AppHandle (..))
-import AppName.Auth (AuthenticatedUser (AuthenticatedClient))
+import AppName.Auth (AuthenticatedUser (..))
 import qualified AppName.Domain.PhoneVerification as Phone
 import AppName.Gateways.Database
   ( Key (UserKey),
@@ -28,6 +28,7 @@ import qualified Servant.Auth.Server as SAS
 getUserByIdEndpoint ::
   (MonadIO m, MonadThrow m) => AppHandle -> Int -> m (Maybe UserSerializer)
 getUserByIdEndpoint AppHandle {..} userId =
+  -- !!!TODO check that current user is Admin
   fmap (fmap mapUser) $
     liftIO . flip runSqlPersistMPool appHandleDbPool $
       loadUserById (UserKey $ fromIntegral userId)
@@ -35,9 +36,17 @@ getUserByIdEndpoint AppHandle {..} userId =
     mapUser entity =
       let User {..} = entityVal entity
        in UserSerializer
-            { userId = fromIntegral . fromSqlKey $ entityKey entity,
-              userCreatedAt = userCreatedAt,
-              userPhone = userPhone
+            { usId = fromIntegral . fromSqlKey $ entityKey entity,
+              usCreatedAt = userCreatedAt,
+              usPhone = userPhone,
+              usDateOfBirth = userDateOfBirth,
+              usAddress =
+                Just
+                  AddressSerializer
+                    { asStreet = userAddressStreet,
+                      asCity = userAddressCity,
+                      asZipCode = userAddressZipCode
+                    }
             }
 
 getOrCreateUserByPhoneEndpoint ::
@@ -61,7 +70,15 @@ getCurrentUserEndpoint AppHandle {..} (SAS.Authenticated (AuthenticatedClient us
     mapUser entity =
       let User {..} = entityVal entity
        in UserSerializer
-            { userId = fromIntegral . fromSqlKey $ entityKey entity,
-              userCreatedAt = userCreatedAt,
-              userPhone = userPhone
+            { usId = fromIntegral . fromSqlKey $ entityKey entity,
+              usCreatedAt = userCreatedAt,
+              usPhone = userPhone,
+              usDateOfBirth = userDateOfBirth,
+              usAddress =
+                Just
+                  AddressSerializer
+                    { asStreet = userAddressStreet,
+                      asCity = userAddressCity,
+                      asZipCode = userAddressZipCode
+                    }
             }

@@ -12,9 +12,11 @@
 
 module AppName.Gateways.Database.Tables.User where
 
+import AppName.API.User (AddressSerializer (..), PersonalInfoSerializer (..))
 import AppName.Domain.PhoneVerification (Phone, phoneToText)
+import Control.Exception.Safe (MonadThrow, throw)
 import Control.Monad.IO.Unlift (MonadIO (liftIO), MonadUnliftIO)
-import Data.Maybe (listToMaybe)
+import Data.Maybe (fromJust, listToMaybe)
 import qualified Data.Text as T
 import qualified Data.Time as Time
 import Database.Esqueleto
@@ -27,9 +29,12 @@ import Database.Esqueleto
     insert,
     rawSql,
     select,
+    set,
     toSqlKey,
+    update,
     val,
     where_,
+    (=.),
     (==.),
     (^.),
   )
@@ -45,6 +50,10 @@ share
 User
     createdAt Time.UTCTime
     phone T.Text
+    dateOfBirth Time.UTCTime Maybe
+    addressStreet T.Text Maybe
+    addressCity T.Text Maybe
+    addressZipCode T.Text Maybe
     deriving Show
 |]
 
@@ -54,12 +63,24 @@ createUserRecord ::
   SqlPersistT m (P.Key User, Time.UTCTime)
 createUserRecord phone = do
   now <- liftIO Time.getCurrentTime
-  rowOrderId <-
-    insert $
-      User
-        now
-        (phoneToText phone)
-  pure (rowOrderId, now)
+  rowId <-
+    insert $ User now (phoneToText phone) Nothing Nothing Nothing Nothing
+  pure (rowId, now)
+
+saveUserPersonalInfo ::
+  (MonadUnliftIO m, MonadThrow m) =>
+  P.Key User ->
+  PersonalInfoSerializer ->
+  SqlPersistT m ()
+saveUserPersonalInfo userId PersonalInfoSerializer {..} = do
+  update $ \u -> do
+    set u [UserDateOfBirth =. val pisDateOfBirth]
+    set u [UserAddressStreet =. val asStreet]
+    set u [UserAddressCity =. val asCity]
+    set u [UserAddressZipCode =. val asZipCode]
+    where_ $ u ^. UserId ==. val userId
+  where
+    AddressSerializer {..} = pisAddress
 
 loadUserById ::
   MonadUnliftIO m =>
