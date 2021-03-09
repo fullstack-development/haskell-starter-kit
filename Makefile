@@ -13,4 +13,6 @@ run: image pg start
 
 stop:
 	docker-compose down
-	
+
+prune: stop
+	docker volume rm haskellstarterkit_pg-data

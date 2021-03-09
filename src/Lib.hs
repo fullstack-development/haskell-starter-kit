@@ -11,16 +11,15 @@ import Control.Monad.IO.Unlift (liftIO)
 import qualified Data.ByteString as BS
 import Data.Functor.Contravariant (Contravariant (contramap))
 import Database.Persist.Postgresql
-import Ext.Data.Env (Env (..))
 import qualified Ext.Logger.Colog as Log
 import qualified Ext.Logger.Config as Log
 
 runDefaultExample :: IO ()
 runDefaultExample =
   Log.usingLoggerT (Log.mkLogActionIO logConf) $ do
-    config <- liftIO $ C.retrieveConfig Dev
+    config <- liftIO C.retrieveConfig
     runLogExample
-    runDBExample config Dev
+    runDBExample config
     Log.logInfo "Finishing application..."
 
 logConf :: Log.LoggerConfig
@@ -31,10 +30,7 @@ logConf =
       logLevel = Log.Debug
     }
 
-runDBExample config env =
-  case env of
-    Prod -> liftIO . withDbPool config $ \pool -> dbExample pool
-    _ ->
+runDBExample config =
       liftIO
         . withDbPoolDebug config
         $ \pool ->

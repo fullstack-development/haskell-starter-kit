@@ -12,3 +12,4 @@ auth-key
 # Local config
 local.*.conf
 local.conf
+local.env
