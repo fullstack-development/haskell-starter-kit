@@ -24,6 +24,7 @@ services:
       - POSTGRES_USER
       - POSTGRES_PASSWORD
       - DB_HOST
+      - DB_PORT
     ports:
       - 8080:8080
 
