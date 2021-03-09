@@ -6,6 +6,7 @@ A simple backend server using PostgreSQL database.
 
 You need to have docker installed in your system. Then run:
 
+`make deps`
 `make run`
 
 ## Develop with stack

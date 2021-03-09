@@ -1,5 +1,8 @@
 default: run
 
+deps:
+	docker build -f Dockerfile.deps -t starterkit/dependencies:latest .
+
 image:
 	docker-compose build
 
@@ -7,7 +10,7 @@ pg:
 	docker-compose up -d db
 
 start:
-	docker-compose up
+	docker-compose up backend
 
 run: image pg start
 
