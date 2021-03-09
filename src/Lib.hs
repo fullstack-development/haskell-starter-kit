@@ -4,6 +4,7 @@ module Lib
 where
 
 import qualified AppName.Config as C
+import AppName.Gateways.Database (runAllMigrations)
 import AppName.Gateways.Database.Setup (withDbPool, withDbPoolDebug)
 import AppName.Gateways.Database.Tables.User (createUserRecord, loadUserById)
 import qualified Colog as Log
@@ -17,6 +18,7 @@ import qualified Ext.Logger.Config as Log
 runDefaultExample :: IO ()
 runDefaultExample =
   Log.usingLoggerT (Log.mkLogActionIO logConf) $ do
+    runAllMigrations
     config <- liftIO C.retrieveConfig
     runLogExample
     runDBExample config
