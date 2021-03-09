@@ -1,6 +1,6 @@
 module Main where
 
-import Lib (runDefaultExample)
+import Lib (runMigrationsAndServer)
 
 main :: IO ()
-main = runDefaultExample
+main = runMigrationsAndServer

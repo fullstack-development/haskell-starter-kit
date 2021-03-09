@@ -1,5 +1,6 @@
 module Lib
   ( runDefaultExample,
+    runMigrationsAndServer,
   )
 where
 
@@ -7,6 +8,7 @@ import qualified AppName.Config as C
 import AppName.Gateways.Database (runAllMigrations)
 import AppName.Gateways.Database.Setup (withDbPool, withDbPoolDebug)
 import AppName.Gateways.Database.Tables.User (createUserRecord, loadUserById)
+import AppName.Server (runDevServer)
 import qualified Colog as Log
 import Control.Monad.IO.Unlift (liftIO)
 import qualified Data.ByteString as BS
@@ -18,11 +20,17 @@ import qualified Ext.Logger.Config as Log
 runDefaultExample :: IO ()
 runDefaultExample =
   Log.usingLoggerT (Log.mkLogActionIO logConf) $ do
-    runAllMigrations
+    liftIO runAllMigrations
     config <- liftIO C.retrieveConfig
     runLogExample
     runDBExample config
-    Log.logInfo "Finishing application..."
+    liftIO runDevServer
+
+runMigrationsAndServer :: IO ()
+runMigrationsAndServer =
+  Log.usingLoggerT (Log.mkLogActionIO logConf) $ do
+    liftIO runAllMigrations
+    liftIO runDevServer
 
 logConf :: Log.LoggerConfig
 logConf =
@@ -33,10 +41,10 @@ logConf =
     }
 
 runDBExample config =
-      liftIO
-        . withDbPoolDebug config
-        $ \pool ->
-          dbExample pool
+  liftIO
+    . withDbPoolDebug config
+    $ \pool ->
+      dbExample pool
   where
     dbExample pool = liftIO . flip runSqlPersistMPool pool $ do
       (usedId, _) <- createUserRecord "+79990424242"
