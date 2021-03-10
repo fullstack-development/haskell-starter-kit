@@ -22,7 +22,7 @@ import Control.Exception.Safe (MonadThrow, throw)
 import Control.Monad.IO.Unlift (MonadIO (liftIO))
 import Database.Persist.Postgresql
 import qualified Database.Persist.Postgresql as P
-import Servant (err404)
+import Servant (err404, err401)
 import qualified Servant.Auth.Server as SAS
 
 getUserByIdEndpoint ::
@@ -65,3 +65,4 @@ getCurrentUserEndpoint AppHandle {..} (SAS.Authenticated (AuthenticatedClient us
               userCreatedAt = userCreatedAt,
               userPhone = userPhone
             }
+getCurrentUserEndpoint _ _  = throw err401
