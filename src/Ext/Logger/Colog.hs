@@ -10,6 +10,7 @@ module Ext.Logger.Colog
     fieldMapM,
     fmtRichMessage,
     mkLogActionIO,
+    logFlush,
   )
 where
 
@@ -25,6 +26,8 @@ import qualified Data.TypeRepMap as TM
 import qualified Ext.Data.Time as Clock
 import qualified Ext.Data.Time as Time
 import qualified Ext.Logger.Config as Conf
+import System.IO (Handle, stdout, hFlush)
+import Control.Monad.Trans (liftIO)
 
 type instance FieldType "timestamp" = Time.UTCTime
 
@@ -68,7 +71,12 @@ fmtRichMessage RichMsg {richMsgMsg = Msg {..}, ..} = do
 mkLogActionIO :: MonadIO m => Conf.LoggerConfig -> LogAction m Message
 mkLogActionIO conf@Conf.LoggerConfig {..} =
   filterBySeverity logLevel msgSeverity $
-    upgradeMessageAction (fieldMapIO conf) $
-      cmapM fmtRichMessage stdout
+  upgradeMessageAction (fieldMapIO conf) $ cmapM fmtRichMessage stdoutLogger
   where
-    stdout = if logToStdout then logByteStringStdout else mempty
+    stdoutLogger =
+      if logToStdout
+        then logByteStringStdout <> logFlush stdout
+        else mempty
+
+logFlush :: MonadIO m => Handle -> LogAction m a
+logFlush handle = LogAction $ const $ liftIO $ hFlush handle
