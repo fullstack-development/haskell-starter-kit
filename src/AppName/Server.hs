@@ -54,6 +54,7 @@ import Servant
     (:<|>) (..),
   )
 import qualified Servant.Auth.Server as SAS
+import AppName.Auth.Commands
 
 buildHandlers ::
   forall (mexternal :: * -> *) (minternal :: * -> *).
@@ -86,6 +87,7 @@ catchServantErrorsFromIO =
 
 runServer :: C.Config -> IO ()
 runServer config = do
+  checkAuthKey
   filePath <- C.getKeysFilePath config
   authKey <- SAS.readKey filePath
   port <- C.getPort config

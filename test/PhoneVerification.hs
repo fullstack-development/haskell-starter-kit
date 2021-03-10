@@ -2,7 +2,7 @@ module PhoneVerification where
 
 import AppName.API.PhoneVerification (PhoneAuthAPI)
 import AppName.Auth (AuthenticatedUser (AuthenticatedClient), defaultJWTSettings, retrieveKey)
-import AppName.Auth.Commands (createKey)
+import AppName.Auth.Commands (createKey, checkAuthKey)
 import qualified AppName.Config as C
 import AppName.Domain.PhoneVerification (Code, Phone, codeToText, defParams, phoneToText)
 import AppName.Gateways.Endpoints.PhoneVerification (Externals (..), phoneVerificationAPI)
@@ -54,6 +54,7 @@ import Test.Tasty.Hspec
     shouldSatisfy,
     testSpec,
   )
+import qualified Servant.Auth.Server as SAS
 
 main :: IO ()
 main = do
@@ -69,12 +70,6 @@ main = do
         requestCodeUnit firstCodeVar
         confirmCodeUnit secondCodeVar
   defaultMain $ testGroup "Auth" [authUnitsSpec]
-  where
-    checkAuthKey = do
-      config <- C.retrieveConfig
-      authKeyPath <- C.getKeysFilePath config
-      isExist <- FS.doesFileExist authKeyPath
-      if isExist then pure () else createKey authKeyPath
 
 api :: Proxy PhoneAuthAPI
 api = Proxy
@@ -85,7 +80,9 @@ newtype MockUser
 
 mkApp :: (Phone -> Code -> IO ()) -> MockUser -> IO Application
 mkApp onSendCode (MockUser userId) = do
-  authKey <- retrieveKey "./keys/mock-key"
+  config <- C.retrieveConfig
+  authKeyPath <- C.getKeysFilePath config
+  authKey <- SAS.readKey authKeyPath
   let logConf :: Log.LoggerConfig
       logConf =
         Log.LoggerConfig

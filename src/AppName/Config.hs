@@ -24,10 +24,10 @@ import UnliftIO.Exception (throwString)
 
 type Config = C.Config
 
-retrieveConfig :: IO C.Config
+retrieveConfig :: MonadIO m =>  m C.Config
 retrieveConfig = do
   let configPath = "./config/default.conf"
-  C.load [C.Required configPath]
+  liftIO $ C.load [C.Required configPath]
 
 getKeysFilePath :: MonadIO m => C.Config -> m FilePath
 getKeysFilePath config = liftIO $ C.require config "auth.key_path"
