@@ -24,7 +24,6 @@ import Data.Proxy
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.Encoding as TLE
-import Ext.Data.Env (Env (Test))
 import Ext.Logger.Colog (logByteStringStdout, logTextStdout)
 import qualified Ext.Logger.Colog as Log
 import qualified Ext.Logger.Config as Log
@@ -72,7 +71,7 @@ main = do
   defaultMain $ testGroup "Auth" [authUnitsSpec]
   where
     checkAuthKey = do
-      config <- C.retrieveConfig Test
+      config <- C.retrieveConfig
       authKeyPath <- C.getKeysFilePath config
       isExist <- FS.doesFileExist authKeyPath
       if isExist then pure () else createKey authKeyPath

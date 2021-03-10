@@ -5,11 +5,8 @@ module Lib
 where
 
 import qualified AppName.Config as C
-<<<<<<< HEAD
 import AppName.Domain.PhoneVerification (UncheckedPhone (UncheckedPhone), checkPhone)
-=======
 import AppName.Gateways.Database (runAllMigrations)
->>>>>>> origin/master
 import AppName.Gateways.Database.Setup (withDbPool, withDbPoolDebug)
 import AppName.Gateways.Database.Tables.User (createUserRecord, loadUserById)
 import AppName.Server (runDevServer)
