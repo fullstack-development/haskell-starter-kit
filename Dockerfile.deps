@@ -9,4 +9,5 @@ RUN apt-get install -y libghc-postgresql-libpq-dev
 COPY ./ haskell-starter-kit/
 
 WORKDIR /haskell-starter-kit/
-RUN stack setup && stack build --only-dependencies
+RUN stack setup
+RUN stack build --only-dependencies
