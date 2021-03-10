@@ -1,4 +1,4 @@
-module AppName.Serializers.User
+module AppName.API.User
   ( UserSerializer (..),
   )
 where

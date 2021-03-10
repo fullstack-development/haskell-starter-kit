@@ -12,6 +12,7 @@
 
 module AppName.Gateways.Database.Tables.User where
 
+import AppName.Domain.PhoneVerification (Phone, phoneToText)
 import Control.Monad.IO.Unlift (MonadIO (liftIO), MonadUnliftIO)
 import Data.Maybe (listToMaybe)
 import qualified Data.Text as T
@@ -23,7 +24,6 @@ import Database.Esqueleto
     entityKey,
     entityVal,
     from,
-    fromSqlKey,
     insert,
     rawSql,
     select,
@@ -50,7 +50,7 @@ User
 
 createUserRecord ::
   (MonadUnliftIO m) =>
-  T.Text ->
+  Phone ->
   SqlPersistT m (P.Key User, Time.UTCTime)
 createUserRecord phone = do
   now <- liftIO Time.getCurrentTime
@@ -58,7 +58,7 @@ createUserRecord phone = do
     insert $
       User
         now
-        phone
+        (phoneToText phone)
   pure (rowOrderId, now)
 
 loadUserById ::
@@ -69,4 +69,14 @@ loadUserById userId =
   fmap listToMaybe . select $
     from $ \user -> do
       where_ $ user ^. UserId ==. val userId
+      pure user
+
+loadUserByPhone ::
+  MonadUnliftIO m =>
+  Phone ->
+  SqlPersistT m (Maybe (P.Entity User))
+loadUserByPhone phoneNumber =
+  fmap listToMaybe . select $
+    from $ \user -> do
+      where_ $ user ^. UserPhone ==. val (phoneToText phoneNumber)
       pure user

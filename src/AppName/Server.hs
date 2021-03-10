@@ -1,4 +1,5 @@
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE KindSignatures #-}
 
 module AppName.Server
   ( runDevServer,
@@ -7,18 +8,24 @@ where
 
 import AppName.API (API, apiType)
 import AppName.AppHandle (AppHandle (..), withAppHandle)
+import AppName.Auth (AuthenticatedUser (AuthenticatedClient), ProtectedServantJWTCtx, defaultJWTSettings)
 import qualified AppName.Config as C
-import AppName.Gateways.Database (withDbPool, withDbPoolDebug)
+import qualified AppName.Domain.PhoneVerification as Phone
+import AppName.Gateways.Database (User (User), loadUserByPhone, withDbPool, withDbPoolDebug)
+import AppName.Gateways.Endpoints.FakeLogin (fakeLoginEndpoint)
 import AppName.Gateways.Endpoints.GetUsers
-  ( getUserByIdEndpoint,
+  ( getCurrentUserEndpoint,
+    getOrCreateUserByPhoneEndpoint,
+    getUserByIdEndpoint,
   )
+import qualified AppName.Gateways.Endpoints.PhoneVerification as Phone
 import Control.Exception.Safe (MonadThrow, throw, try)
 import Control.Monad (unless)
 import Control.Monad.Except (ExceptT (ExceptT))
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import qualified Data.Pool as Pool
 import Data.Proxy (Proxy (Proxy))
-import Database.Persist.Sql (SqlBackend)
+import Database.Persist.Sql (Entity (entityKey), SqlBackend, fromSqlKey, runSqlPersistMPool)
 import Ext.Logger.Colog (logTextStdout)
 import Network.Wai.Handler.Warp
   ( Settings,
@@ -36,30 +43,53 @@ import Network.Wai.Middleware.Cors
   )
 import Network.Wai.Middleware.Servant.Options (provideOptions)
 import Servant
-  ( Handler (Handler),
+  ( Context (EmptyContext, (:.)),
+    Handler (Handler),
     Server,
     ServerT,
     err404,
-    hoistServer,
+    hoistServerWithContext,
     serve,
     serveWithContext,
     (:<|>) (..),
   )
+import qualified Servant.Auth.Server as SAS
+import AppName.Auth.Commands
 
-handler ::
-  (MonadIO m, MonadThrow m) =>
+buildHandlers ::
+  forall (mexternal :: * -> *) (minternal :: * -> *).
+  (MonadIO mexternal, MonadIO minternal, MonadThrow minternal) =>
+  SAS.JWTSettings ->
   AppHandle ->
-  ServerT API m
-handler h = testEndpoint :<|> getUserByIdEndpoint h
+  mexternal (ServerT API minternal)
+buildHandlers jwtSettings h = do
+  phoneVerification <- liftIO buildPhoneVerification
+  pure $ fakeLoginEndpoint jwtSettings :<|> phoneVerification :<|> getUserByIdEndpoint h :<|> getCurrentUserEndpoint h
   where
-    testEndpoint param =
-      pure $ "You sent me " <> param
+    buildPhoneVerification :: IO (ServerT Phone.PhoneAuthAPI minternal)
+    buildPhoneVerification =
+      Phone.phoneVerificationAPI
+        Phone.defParams
+        Phone.Externals
+          { eLogger = appHandleLogger h,
+            eJwtSettings = jwtSettings,
+            eRetrieveUserByPhone = getOrCreateUserByPhoneEndpoint h,
+            eSendCodeToUser = codePrinter
+          }
+    codePrinter phone code = print $ "code sent: " <> Phone.codeToText code
 
 catchServantErrorsFromIO :: ServerT API IO -> Server API
-catchServantErrorsFromIO = hoistServer apiType (Handler . ExceptT . try)
+catchServantErrorsFromIO =
+  hoistServerWithContext
+    apiType
+    (Proxy :: ProtectedServantJWTCtx)
+    (Handler . ExceptT . try)
 
 runServer :: C.Config -> IO ()
 runServer config = do
+  checkAuthKey
+  filePath <- C.getKeysFilePath config
+  authKey <- SAS.readKey filePath
   port <- C.getPort config
   let serverSettings =
         setPort port $
@@ -67,16 +97,18 @@ runServer config = do
             (putStrLn ("listening on port " <> show port))
             defaultSettings
       policy = simpleCorsResourcePolicy {corsRequestHeaders = ["content-type"]}
+      jwtSettings = SAS.defaultJWTSettings authKey
+      cfg = SAS.defaultCookieSettings :. jwtSettings :. EmptyContext
       server :: MonadIO (m IO) => Settings -> AppHandle -> m IO ()
-      server settings ah =
+      server settings ah = do
+        handler <- buildHandlers jwtSettings ah
         liftIO
           . runSettings settings
           . cors (const $ Just policy)
           . provideOptions apiType
-          . serve apiType
+          . serveWithContext apiType cfg
           . catchServantErrorsFromIO
-          . handler
-          $ ah
+          $ handler
   liftIO $ withAppHandle $ server serverSettings
 
 runDevServer :: IO ()
