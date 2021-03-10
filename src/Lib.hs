@@ -1,29 +1,43 @@
 module Lib
   ( runDefaultExample,
+    runMigrationsAndServer,
   )
 where
 
 import qualified AppName.Config as C
+<<<<<<< HEAD
 import AppName.Domain.PhoneVerification (UncheckedPhone (UncheckedPhone), checkPhone)
+=======
+import AppName.Gateways.Database (runAllMigrations)
+>>>>>>> origin/master
 import AppName.Gateways.Database.Setup (withDbPool, withDbPoolDebug)
 import AppName.Gateways.Database.Tables.User (createUserRecord, loadUserById)
+import AppName.Server (runDevServer)
 import qualified Colog as Log
 import Control.Monad.IO.Unlift (liftIO)
 import qualified Data.ByteString as BS
 import Data.Either (fromRight)
 import Data.Functor.Contravariant (Contravariant (contramap))
 import Database.Persist.Postgresql
-import Ext.Data.Env (Env (..))
 import qualified Ext.Logger.Colog as Log
 import qualified Ext.Logger.Config as Log
 
 runDefaultExample :: IO ()
 runDefaultExample =
   Log.usingLoggerT (Log.mkLogActionIO logConf) $ do
-    config <- liftIO $ C.retrieveConfig Dev
+    liftIO runAllMigrations
+    config <- liftIO C.retrieveConfig
     runLogExample
-    runDBExample config Dev
-    Log.logInfo "Finishing application..."
+    runDBExample config
+    liftIO runDevServer
+
+runMigrationsAndServer :: IO ()
+runMigrationsAndServer =
+  Log.usingLoggerT (Log.mkLogActionIO logConf) $ do
+    runLogExample
+    liftIO runAllMigrations
+    Log.logDebug "starting server"
+    liftIO runDevServer
 
 logConf :: Log.LoggerConfig
 logConf =
@@ -33,14 +47,11 @@ logConf =
       logLevel = Log.Debug
     }
 
-runDBExample config env =
-  case env of
-    Prod -> liftIO . withDbPool config $ \pool -> dbExample pool
-    _ ->
-      liftIO
-        . withDbPoolDebug config
-        $ \pool ->
-          dbExample pool
+runDBExample config =
+  liftIO
+    . withDbPoolDebug config
+    $ \pool ->
+      dbExample pool
   where
     dbExample pool = liftIO . flip runSqlPersistMPool pool $ do
       phone <- either (error "Phone is incorrect") pure . checkPhone $ UncheckedPhone "+79990424242"

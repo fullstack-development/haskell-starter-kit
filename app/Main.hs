@@ -1,6 +1,7 @@
 module Main where
 
-import Lib (runDefaultExample)
+import Ext.Logger.Colog (setLineBuffering)
+import Lib (runMigrationsAndServer)
 
 main :: IO ()
-main = runDefaultExample
+main = setLineBuffering >> runMigrationsAndServer
