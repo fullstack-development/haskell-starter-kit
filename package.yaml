@@ -66,6 +66,12 @@ dependencies:
 - servant-auth-server
 - servant-foreign
 
+ghc-options:
+- -Wall
+- -Werror=missing-fields
+- -Werror=incomplete-record-updates
+- -Werror=missing-methods
+- -Werror=incomplete-patterns
 
 default-extensions:
 - RecordWildCards
