@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: c5849e0c63ec6fb34b5ad173dc1fa58065c8342fab527f7e9092b22d43c924fe
+-- hash: ca4172a53fd4f7e8f6be076f17c26f21ef54b95311e82fd25903ffda0b31a876
 
 name:           haskell-starter-kit
 version:        0.1.0.0
@@ -38,7 +38,6 @@ library
       AppName.Serializers.User
       AppName.Server
       Ext.Data.Aeson
-      Ext.Data.Env
       Ext.Data.Time
       Ext.Logger.Colog
       Ext.Logger.Config

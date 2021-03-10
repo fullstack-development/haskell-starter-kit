@@ -19,7 +19,6 @@ import Control.Monad.IO.Class (MonadIO, liftIO)
 import qualified Data.Pool as Pool
 import Data.Proxy (Proxy (Proxy))
 import Database.Persist.Sql (SqlBackend)
-import Ext.Data.Env (Env (..))
 import Ext.Logger.Colog (logTextStdout)
 import Network.Wai.Handler.Warp
   ( Settings,
@@ -59,8 +58,8 @@ handler h = testEndpoint :<|> getUserByIdEndpoint h
 catchServantErrorsFromIO :: ServerT API IO -> Server API
 catchServantErrorsFromIO = hoistServer apiType (Handler . ExceptT . try)
 
-runServer :: Env -> C.Config -> IO ()
-runServer env config = do
+runServer :: C.Config -> IO ()
+runServer config = do
   port <- C.getPort config
   let serverSettings =
         setPort port $
@@ -78,9 +77,9 @@ runServer env config = do
           . catchServantErrorsFromIO
           . handler
           $ ah
-  liftIO $ withAppHandle env $ server serverSettings
+  liftIO $ withAppHandle $ server serverSettings
 
 runDevServer :: IO ()
 runDevServer = do
-  config <- C.retrieveConfig Dev
-  runServer Dev config
+  config <- C.retrieveConfig
+  runServer config
