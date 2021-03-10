@@ -29,7 +29,9 @@ runDefaultExample =
 runMigrationsAndServer :: IO ()
 runMigrationsAndServer =
   Log.usingLoggerT (Log.mkLogActionIO logConf) $ do
+    runLogExample
     liftIO runAllMigrations
+    Log.logDebug "starting server"
     liftIO runDevServer
 
 logConf :: Log.LoggerConfig
