@@ -27,7 +27,6 @@ import Control.Monad.IO.Class (MonadIO, liftIO)
 import qualified Data.Pool as Pool
 import Data.Proxy (Proxy (Proxy))
 import Database.Persist.Sql (Entity (entityKey), SqlBackend, fromSqlKey, runSqlPersistMPool)
-import Ext.Data.Env (Env (..))
 import Ext.Logger.Colog (logTextStdout)
 import Network.Wai.Handler.Warp
   ( Settings,
@@ -56,6 +55,7 @@ import Servant
     (:<|>) (..),
   )
 import qualified Servant.Auth.Server as SAS
+import AppName.Auth.Commands
 
 buildHandlers ::
   forall (mexternal :: * -> *) (minternal :: * -> *).
@@ -87,8 +87,9 @@ catchServantErrorsFromIO =
     (Proxy :: ProtectedServantJWTCtx)
     (Handler . ExceptT . try)
 
-runServer :: Env -> C.Config -> IO ()
-runServer env config = do
+runServer :: C.Config -> IO ()
+runServer config = do
+  checkAuthKey
   filePath <- C.getKeysFilePath config
   authKey <- SAS.readKey filePath
   port <- C.getPort config
@@ -110,9 +111,9 @@ runServer env config = do
           . serveWithContext apiType cfg
           . catchServantErrorsFromIO
           $ handler
-  liftIO $ withAppHandle env $ server serverSettings
+  liftIO $ withAppHandle $ server serverSettings
 
 runDevServer :: IO ()
 runDevServer = do
-  config <- C.retrieveConfig Dev
-  runServer Dev config
+  config <- C.retrieveConfig
+  runServer config

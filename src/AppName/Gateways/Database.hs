@@ -10,7 +10,6 @@ import AppName.Gateways.Database.Setup as Exports
 import AppName.Gateways.Database.Tables.User as Exports
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Database.Persist.Postgresql
-import Ext.Data.Env (Env (..))
 
 migrateAll :: (MonadIO m) => SqlPersistT m ()
 migrateAll = mapM_ runMigration allMigrations
@@ -21,5 +20,5 @@ allMigrations =
 
 runAllMigrations :: IO ()
 runAllMigrations = do
-  conf <- C.retrieveConfig Dev
+  conf <- C.retrieveConfig
   withDbPoolDebug conf $ \pool -> liftIO $ runSqlPersistMPool migrateAll pool

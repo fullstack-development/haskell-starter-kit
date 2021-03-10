@@ -33,6 +33,7 @@ dependencies:
 - random
 - random-shuffle
 - stm
+- directory
 
 - configurator
 - resourcet
@@ -113,7 +114,6 @@ tests:
     - tasty-hspec
 
     # extra
-    - directory
     - http-types
     - wai-extra
     when: # workaround from https://github.com/sol/hpack/issues/303

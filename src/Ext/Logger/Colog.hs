@@ -10,11 +10,14 @@ module Ext.Logger.Colog
     fieldMapM,
     fmtRichMessage,
     mkLogActionIO,
+    logFlush,
+    setLineBuffering,
   )
 where
 
 import Colog as Export
 import Control.Monad.IO.Class (MonadIO)
+import Control.Monad.Trans (liftIO)
 import Data.Aeson ((.=))
 import qualified Data.Aeson as J
 import qualified Data.ByteString as BS
@@ -25,6 +28,13 @@ import qualified Data.TypeRepMap as TM
 import qualified Ext.Data.Time as Clock
 import qualified Ext.Data.Time as Time
 import qualified Ext.Logger.Config as Conf
+import System.IO
+  ( BufferMode (LineBuffering),
+    Handle,
+    hFlush,
+    hSetBuffering,
+    stdout,
+  )
 
 type instance FieldType "timestamp" = Time.UTCTime
 
@@ -67,8 +77,17 @@ fmtRichMessage RichMsg {richMsgMsg = Msg {..}, ..} = do
 
 mkLogActionIO :: MonadIO m => Conf.LoggerConfig -> LogAction m Message
 mkLogActionIO conf@Conf.LoggerConfig {..} =
-  filterBySeverity logLevel msgSeverity $
-    upgradeMessageAction (fieldMapIO conf) $
-      cmapM fmtRichMessage stdout
+  filterBySeverity logLevel msgSeverity
+    $ upgradeMessageAction (fieldMapIO conf)
+    $ cmapM fmtRichMessage stdoutLogger
   where
-    stdout = if logToStdout then logByteStringStdout else mempty
+    stdoutLogger =
+      if logToStdout
+        then logByteStringStdout
+        else mempty
+
+logFlush :: MonadIO m => Handle -> LogAction m a
+logFlush handle = LogAction $ const $ liftIO $ hFlush handle
+
+setLineBuffering :: MonadIO m => m ()
+setLineBuffering = liftIO $ hSetBuffering stdout LineBuffering

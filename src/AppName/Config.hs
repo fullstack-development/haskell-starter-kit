@@ -17,7 +17,6 @@ import Data.Maybe (fromMaybe)
 import qualified Data.Text as T
 import qualified Data.Time as Time
 import Database.Persist.Postgresql (SqlPersistT)
-import Ext.Data.Env (Env (..))
 import Ext.Logger.Colog (Severity (Debug))
 import Ext.Logger.Config (LoggerConfig (..))
 import Text.Read (readMaybe)
@@ -25,14 +24,10 @@ import UnliftIO.Exception (throwString)
 
 type Config = C.Config
 
-retrieveConfig :: Env -> IO C.Config
-retrieveConfig env = do
-  let configPath =
-        case env of
-          Dev -> "./config/dev.conf"
-          Prod -> "./config/prod.conf"
-          Test -> "./config/test.conf"
-  C.load [C.Required configPath]
+retrieveConfig :: MonadIO m =>  m C.Config
+retrieveConfig = do
+  let configPath = "./config/default.conf"
+  liftIO $ C.load [C.Required configPath]
 
 getKeysFilePath :: MonadIO m => C.Config -> m FilePath
 getKeysFilePath config = liftIO $ C.require config "auth.key_path"
