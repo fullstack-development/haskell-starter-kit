@@ -17,6 +17,10 @@ To build project:
 
 `stack build`
 
+To configure env for project:
+
+Run `source local.env` or create file with desired variables at `./config/local.conf`.
+
 To run database:
 
 `docker-compose up -d db`
