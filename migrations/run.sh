@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 docker run \
     --network="host" \
     -v `pwd`/migrations:/workspace/ \
