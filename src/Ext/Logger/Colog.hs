@@ -26,7 +26,6 @@ import qualified Data.Text as T
 import qualified Data.Time as Time
 import qualified Data.TypeRepMap as TM
 import qualified Ext.Data.Time as Clock
-import qualified Ext.Data.Time as Time
 import qualified Ext.Logger.Config as Conf
 import System.IO
   ( BufferMode (LineBuffering),
@@ -77,9 +76,9 @@ fmtRichMessage RichMsg {richMsgMsg = Msg {..}, ..} = do
 
 mkLogActionIO :: MonadIO m => Conf.LoggerConfig -> LogAction m Message
 mkLogActionIO conf@Conf.LoggerConfig {..} =
-  filterBySeverity logLevel msgSeverity
-    $ upgradeMessageAction (fieldMapIO conf)
-    $ cmapM fmtRichMessage stdoutLogger
+  filterBySeverity logLevel msgSeverity $
+    upgradeMessageAction (fieldMapIO conf) $
+      cmapM fmtRichMessage stdoutLogger
   where
     stdoutLogger =
       if logToStdout

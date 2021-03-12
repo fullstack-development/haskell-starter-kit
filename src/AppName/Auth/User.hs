@@ -8,7 +8,6 @@ where
 
 import Data.Aeson ((.:), (.=))
 import qualified Data.Aeson as J
-import qualified Data.Text as T
 import GHC.Generics (Generic)
 import qualified Servant.Auth.Server as SAS
 

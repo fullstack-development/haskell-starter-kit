@@ -1,10 +1,8 @@
 module AppName.Auth.Commands where
 
-import qualified Data.Text as T
-import Servant.Auth.Server (writeKey)
 import qualified AppName.Config as C
+import Servant.Auth.Server (writeKey)
 import qualified System.Directory as FS
-import Control.Monad.Trans (MonadIO)
 
 createKey :: FilePath -> IO ()
 createKey filePath = do
