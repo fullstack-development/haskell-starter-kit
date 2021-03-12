@@ -14,23 +14,17 @@ module AppName.Gateways.Database.Tables.User where
 
 import AppName.API.User (AddressSerializer (..), PersonalInfoSerializer (..))
 import AppName.Domain.PhoneVerification (Phone, phoneToText)
-import Control.Exception.Safe (MonadThrow, throw)
+import Control.Exception.Safe (MonadThrow)
 import Control.Monad.IO.Unlift (MonadIO (liftIO), MonadUnliftIO)
-import Data.Maybe (fromJust, listToMaybe)
+import Data.Maybe (listToMaybe)
 import qualified Data.Text as T
 import qualified Data.Time as Time
 import Database.Esqueleto
-  ( Entity,
-    PersistValue (PersistInt64),
-    SqlPersistT,
-    entityKey,
-    entityVal,
+  ( SqlPersistT,
     from,
     insert,
-    rawSql,
     select,
     set,
-    toSqlKey,
     update,
     val,
     where_,
@@ -40,9 +34,6 @@ import Database.Esqueleto
   )
 import qualified Database.Persist.Postgresql as P
 import Database.Persist.TH
-import Database.PostgreSQL.Simple (SqlError (..))
-import Ext.Data.Time (now)
-import UnliftIO.Exception (catch)
 
 share
   [mkPersist sqlSettings, mkMigrate "migrateUser"]

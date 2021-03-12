@@ -12,7 +12,7 @@ import AppName.Gateways.Database (saveUserPersonalInfo)
 import Control.Exception.Safe (throw)
 import Control.Monad.IO.Unlift (MonadIO (liftIO))
 import Data.Functor (($>))
-import Database.Persist.Postgresql
+import Database.Persist.Postgresql (runSqlPersistMPool, toSqlKey)
 import qualified Ext.HTTP.Response as Web
 import qualified Ext.Logger.Colog as Log
 import Servant (err401)

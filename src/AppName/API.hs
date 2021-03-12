@@ -9,19 +9,11 @@ where
 
 import qualified AppName.API.PhoneVerification as Phone
 import AppName.API.User (PersonalInfoSerializer, UserSerializer)
-import AppName.Auth (AuthenticatedUser, ProtectedWithJWT)
-import qualified AppName.Config as C
+import AppName.Auth (ProtectedWithJWT)
 import AppName.Gateways.Endpoints.FakeLogin (LoginData, LoginResponse)
 import Data.Proxy (Proxy (..))
-import qualified Data.Text as T
 import qualified Ext.HTTP.Response as Web
 import Servant (Capture, Get, JSON, Post, ReqBody, (:<|>) (..), (:>))
-import qualified Servant.Auth as SAS
-
-data TestResponse = TestResponse
-  { responseStatus :: Bool,
-    responseText :: T.Text
-  }
 
 type API =
   LoginAPIDetached :<|> Phone.PhoneAuthAPI :<|> GetUsersAPI :<|> SaveUsersAPI

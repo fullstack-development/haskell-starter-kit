@@ -2,7 +2,6 @@ module Ext.HTTP.Response where
 
 import Data.Aeson ((.=))
 import qualified Data.Aeson as J
-import Data.Maybe (maybeToList)
 import Ext.HTTP.Error (WebApiHttpError (..))
 
 data WebApiHttpResponse res
