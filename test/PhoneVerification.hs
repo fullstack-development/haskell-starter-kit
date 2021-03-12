@@ -30,7 +30,7 @@ import qualified Ext.Logger.Config as Log
 import Network.HTTP.Types (Header, methodPost)
 import Network.Wai
 import Network.Wai.Test (SResponse)
-import Servant (serve)
+import Servant (serve, hoistServer, Handler(..))
 import qualified System.Directory as FS
 import System.Environment (setEnv)
 import Test.Hspec.Wai
@@ -55,6 +55,8 @@ import Test.Tasty.Hspec
     testSpec,
   )
 import qualified Servant.Auth.Server as SAS
+import Control.Monad.Except (ExceptT (ExceptT))
+import Control.Exception.Safe (MonadThrow, throw, try)
 
 main :: IO ()
 main = do
@@ -99,7 +101,10 @@ mkApp onSendCode (MockUser userId) = do
             eSendCodeToUser = onSendCode
           }
   impl <- phoneVerificationAPI defParams mockExternals
-  pure $ serve api impl
+  pure $ serve api $ hoistServer api hoistTestServer impl
+
+hoistTestServer :: Log.LoggerT Log.Message IO x -> Handler x
+hoistTestServer = Handler . ExceptT . try . Log.usingLoggerT mempty
 
 jsonHeaders :: [Header]
 jsonHeaders = [("Content-Type", "application/json")]
