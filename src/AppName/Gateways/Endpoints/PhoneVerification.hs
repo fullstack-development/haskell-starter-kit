@@ -30,6 +30,7 @@ import Network.Wai (Application)
 import Servant (ServerT, err500, serve, (:<|>) (..))
 import qualified Servant.Auth.Server as SAS
 import System.Random (newStdGen)
+import AppName.AppHandle (MonadHandler)
 
 type QueryUser =
   Model.Phone -> IO AuthenticatedUser
@@ -51,8 +52,6 @@ data Handle s = Handle
     hSendCodeToUser :: SendCodeToUser,
     hStorage :: s
   }
-
-type MonadHandler m = (MonadIO m, MonadThrow m)
 
 phoneVerificationAPItype :: Proxy PhoneAuthAPI
 phoneVerificationAPItype = Proxy

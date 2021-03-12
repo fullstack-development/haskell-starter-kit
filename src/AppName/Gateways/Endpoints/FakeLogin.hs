@@ -7,6 +7,7 @@ module AppName.Gateways.Endpoints.FakeLogin
   )
 where
 
+import AppName.AppHandle (MonadHandler)
 import AppName.Auth.User (AuthenticatedUser (..))
 import Control.Exception.Safe (MonadThrow, throw)
 import Control.Monad.IO.Unlift (MonadIO (liftIO))
@@ -16,13 +17,14 @@ import qualified Data.Aeson as J
 import qualified Data.ByteString.Lazy as BL
 import qualified Ext.Data.Aeson as J
 import GHC.Generics (Generic)
-import Servant (Handler, JSON, Post, ReqBody, err401, throwError, (:>))
+import Servant ((:>), Handler, JSON, Post, ReqBody, err401, throwError)
 import qualified Servant.Auth.Server as SAS
 
-data LoginData = LoginData
-  { ldUserId :: Int,
-    ldPassword :: String
-  }
+data LoginData
+  = LoginData
+      { ldUserId :: Int,
+        ldPassword :: String
+      }
   deriving (Eq, Show, Read, Generic)
 
 instance J.ToJSON LoginData where
@@ -49,7 +51,7 @@ instance J.ToJSON LoginResponse where
             ]
       ]
 
-fakeLoginEndpoint :: (MonadIO m, MonadThrow m) => SAS.JWTSettings -> LoginData -> m LoginResponse
+fakeLoginEndpoint :: (MonadHandler m) => SAS.JWTSettings -> LoginData -> m LoginResponse
 fakeLoginEndpoint jwtSettings (LoginData userId "Open Sesame") = do
   token <-
     liftIO $

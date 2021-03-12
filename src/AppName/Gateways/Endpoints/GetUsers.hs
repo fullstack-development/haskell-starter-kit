@@ -22,15 +22,16 @@ import Control.Exception.Safe (MonadThrow, throw)
 import Control.Monad.IO.Unlift (MonadIO (liftIO))
 import Database.Persist.Postgresql
 import qualified Database.Persist.Postgresql as P
-import Servant (err404, err401)
+import Servant (err401, err404)
 import qualified Servant.Auth.Server as SAS
+import AppName.AppHandle (MonadHandler)
 
 getUserByIdEndpoint ::
-  (MonadIO m, MonadThrow m) => AppHandle -> Int -> m (Maybe UserSerializer)
+  (MonadHandler m) => AppHandle -> Int -> m (Maybe UserSerializer)
 getUserByIdEndpoint AppHandle {..} userId =
-  fmap (fmap mapUser) $
-    liftIO . flip runSqlPersistMPool appHandleDbPool $
-      loadUserById (UserKey $ fromIntegral userId)
+  fmap (fmap mapUser)
+    $ liftIO . flip runSqlPersistMPool appHandleDbPool
+    $ loadUserById (UserKey $ fromIntegral userId)
   where
     mapUser entity =
       let User {..} = entityVal entity
@@ -41,10 +42,11 @@ getUserByIdEndpoint AppHandle {..} userId =
             }
 
 getOrCreateUserByPhoneEndpoint ::
-  (MonadIO m, MonadThrow m) => AppHandle -> Phone.Phone -> m AuthenticatedUser
+  (MonadHandler m) => AppHandle -> Phone.Phone -> m AuthenticatedUser
 getOrCreateUserByPhoneEndpoint AppHandle {..} phoneNumber =
-  fmap (AuthenticatedClient . fromIntegral . fromSqlKey) $
-    liftIO . flip runSqlPersistMPool appHandleDbPool $ do
+  fmap (AuthenticatedClient . fromIntegral . fromSqlKey)
+    $ liftIO . flip runSqlPersistMPool appHandleDbPool
+    $ do
       user <- loadUserByPhone phoneNumber
       maybe createNewUser (pure . entityKey) user
   where
@@ -52,11 +54,11 @@ getOrCreateUserByPhoneEndpoint AppHandle {..} phoneNumber =
       fst <$> createUserRecord phoneNumber
 
 getCurrentUserEndpoint ::
-  (MonadIO m, MonadThrow m) => AppHandle -> SAS.AuthResult AuthenticatedUser -> m (Maybe UserSerializer)
+  (MonadHandler m) => AppHandle -> SAS.AuthResult AuthenticatedUser -> m (Maybe UserSerializer)
 getCurrentUserEndpoint AppHandle {..} (SAS.Authenticated (AuthenticatedClient userId)) =
-  fmap (fmap mapUser) $
-    liftIO . flip runSqlPersistMPool appHandleDbPool $
-      loadUserById (UserKey $ fromIntegral userId)
+  fmap (fmap mapUser)
+    $ liftIO . flip runSqlPersistMPool appHandleDbPool
+    $ loadUserById (UserKey $ fromIntegral userId)
   where
     mapUser entity =
       let User {..} = entityVal entity
@@ -65,4 +67,4 @@ getCurrentUserEndpoint AppHandle {..} (SAS.Authenticated (AuthenticatedClient us
               userCreatedAt = userCreatedAt,
               userPhone = userPhone
             }
-getCurrentUserEndpoint _ _  = throw err401
+getCurrentUserEndpoint _ _ = throw err401
