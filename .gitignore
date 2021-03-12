@@ -17,3 +17,4 @@ local.conf
 local.*
 *.local
 .env
+migrations/liquibase.properties
