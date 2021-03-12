@@ -26,7 +26,7 @@ type Config = C.Config
 
 retrieveConfig :: MonadIO m =>  m C.Config
 retrieveConfig = do
-  let configPath = "./config/default.conf"
+  let configPath = "./config/local.conf"
   liftIO $ C.load [C.Required configPath]
 
 getKeysFilePath :: MonadIO m => C.Config -> m FilePath

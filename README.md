@@ -2,12 +2,26 @@
 
 A simple backend server using PostgreSQL database.
 
+## Configure project
+
+To configure env for project:
+
+1. Configure file at `./config/local.conf` using template at `./config/template.conf`:
+
+`cp ./config/template.conf ./config/local.conf`
+
+2. Configure docker env variables at `./.env` using template at `./.env.template`.
+
+`cp ./.env.template ./.env`
+
 ## Run with docker
 
 You need to have docker installed in your system. Then run:
 
-`make deps`
-`make run`
+```
+make deps
+make run
+```
 
 ## Develop with stack
 

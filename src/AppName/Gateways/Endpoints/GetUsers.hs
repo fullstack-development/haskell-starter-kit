@@ -8,7 +8,7 @@ module AppName.Gateways.Endpoints.GetUsers
 where
 
 import AppName.API.User (AddressSerializer (..), UserSerializer (..))
-import AppName.AppHandle (AppHandle (..))
+import AppName.AppHandle (AppHandle (..), MonadHandler)
 import AppName.Auth (AuthenticatedUser (..))
 import qualified AppName.Domain.PhoneVerification as Phone
 import AppName.Gateways.Database
@@ -18,15 +18,15 @@ import AppName.Gateways.Database
     loadUserById,
     loadUserByPhone,
   )
-import Control.Exception.Safe (MonadThrow, throw)
+import Control.Exception.Safe (throw)
 import Control.Monad.IO.Unlift (MonadIO (liftIO))
 import Database.Persist.Postgresql
-import qualified Database.Persist.Postgresql as P
-import Servant (err404)
+import qualified Ext.Logger.Colog as Log
+import Servant (err401)
 import qualified Servant.Auth.Server as SAS
 
 getUserByIdEndpoint ::
-  (MonadIO m, MonadThrow m) => AppHandle -> Int -> m (Maybe UserSerializer)
+  (MonadHandler m) => AppHandle -> Int -> m (Maybe UserSerializer)
 getUserByIdEndpoint AppHandle {..} userId =
   -- !!!TODO check that current user is Admin
   fmap (fmap mapUser) $
@@ -50,18 +50,19 @@ getUserByIdEndpoint AppHandle {..} userId =
             }
 
 getOrCreateUserByPhoneEndpoint ::
-  (MonadIO m, MonadThrow m) => AppHandle -> Phone.Phone -> m AuthenticatedUser
+  (MonadHandler m) => AppHandle -> Phone.Phone -> m AuthenticatedUser
 getOrCreateUserByPhoneEndpoint AppHandle {..} phoneNumber =
   fmap (AuthenticatedClient . fromIntegral . fromSqlKey) $
-    liftIO . flip runSqlPersistMPool appHandleDbPool $ do
-      user <- loadUserByPhone phoneNumber
-      maybe createNewUser (pure . entityKey) user
+    liftIO . flip runSqlPersistMPool appHandleDbPool $
+      do
+        user <- loadUserByPhone phoneNumber
+        maybe createNewUser (pure . entityKey) user
   where
     createNewUser =
       fst <$> createUserRecord phoneNumber
 
 getCurrentUserEndpoint ::
-  (MonadIO m, MonadThrow m) => AppHandle -> SAS.AuthResult AuthenticatedUser -> m (Maybe UserSerializer)
+  (MonadHandler m) => AppHandle -> SAS.AuthResult AuthenticatedUser -> m (Maybe UserSerializer)
 getCurrentUserEndpoint AppHandle {..} (SAS.Authenticated (AuthenticatedClient userId)) =
   fmap (fmap mapUser) $
     liftIO . flip runSqlPersistMPool appHandleDbPool $
@@ -82,3 +83,6 @@ getCurrentUserEndpoint AppHandle {..} (SAS.Authenticated (AuthenticatedClient us
                       asZipCode = userAddressZipCode
                     }
             }
+getCurrentUserEndpoint _ _ = do
+  Log.logError "getCurrentUserEndpoint: Unauthorized access"
+  liftIO $ throw err401
