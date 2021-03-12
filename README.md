@@ -29,6 +29,10 @@ To build project:
 
 `stack build`
 
+To run migration:
+
+`./migration/run.sh`
+
 To run database:
 
 `docker-compose up -d db`
