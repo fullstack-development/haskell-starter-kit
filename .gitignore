@@ -14,3 +14,6 @@ keys/*
 # Local config
 local.*.conf
 local.conf
+local.*
+*.local
+.env
