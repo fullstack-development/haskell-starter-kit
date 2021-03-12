@@ -1,7 +1,7 @@
 {-# LANGUAGE DataKinds #-}
 
 module AppName.Gateways.Endpoints.FakeLogin
-  ( LoginResponse,
+  ( LoginResponse(..),
     LoginData,
     fakeLoginEndpoint,
   )
@@ -9,7 +9,6 @@ where
 
 import AppName.AppHandle (MonadHandler)
 import AppName.Auth.User (AuthenticatedUser (..))
-import Control.Exception.Safe (MonadThrow, throw)
 import Control.Monad.IO.Unlift (MonadIO (liftIO))
 import Crypto.JOSE (Error)
 import Data.Aeson ((.=))
@@ -17,8 +16,8 @@ import qualified Data.Aeson as J
 import qualified Data.ByteString.Lazy as BL
 import qualified Ext.Data.Aeson as J
 import GHC.Generics (Generic)
-import Servant ((:>), Handler, JSON, Post, ReqBody, err401, throwError)
 import qualified Servant.Auth.Server as SAS
+import qualified Ext.Logger.Colog as Log
 
 data LoginData
   = LoginData
@@ -60,4 +59,6 @@ fakeLoginEndpoint jwtSettings (LoginData userId "Open Sesame") = do
         jwtSettings
         Nothing
   either (pure . LoginResponseError) (pure . LoginResponseSuccess) token
-fakeLoginEndpoint _ _ = throw err401
+fakeLoginEndpoint _ _ = do
+  Log.logError "getCurrentUserEndpoint: Unauthorized access"
+  pure $ LoginResponseSuccess "Unauthorized"

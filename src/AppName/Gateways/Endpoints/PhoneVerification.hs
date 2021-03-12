@@ -11,47 +11,48 @@ module AppName.Gateways.Endpoints.PhoneVerification
 where
 
 import AppName.API.PhoneVerification
+import AppName.AppHandle (MonadHandler)
 import AppName.Auth.User (AuthenticatedUser)
 import qualified AppName.Domain.PhoneVerification as Model
 import qualified AppName.Gateways.PhoneVerificationStorage as S
-import Control.Exception.Safe (MonadThrow, throw)
 import Control.Monad (unless, when)
 import Control.Monad.Except (runExceptT, throwError)
-import Control.Monad.IO.Class
+import Control.Monad.IO.Class (MonadIO (liftIO))
+import Control.Monad.State (lift)
 import Data.Bool (bool)
 import Data.Foldable (traverse_)
 import Data.Proxy (Proxy (..))
-import qualified Data.Text as T
 import Data.Time (getCurrentTime)
-import Ext.Data.Text (tshow)
-import qualified Ext.Logger.Colog as Log
 import qualified Ext.Logger.Config as Log
-import Network.Wai (Application)
-import Servant (ServerT, err500, serve, (:<|>) (..))
+import Servant ((:<|>) (..), ServerT)
 import qualified Servant.Auth.Server as SAS
 import System.Random (newStdGen)
-import AppName.AppHandle (MonadHandler)
 
 type QueryUser =
-  Model.Phone -> IO AuthenticatedUser
+  forall m.
+  MonadHandler m =>
+  Model.Phone ->
+  m AuthenticatedUser
 
 type SendCodeToUser = Model.Phone -> Model.Code -> IO ()
 
-data Externals = Externals
-  { eLogger :: Log.LoggerConfig,
-    eJwtSettings :: SAS.JWTSettings,
-    eRetrieveUserByPhone :: QueryUser,
-    eSendCodeToUser :: SendCodeToUser
-  }
+data Externals
+  = Externals
+      { eLogger :: Log.LoggerConfig,
+        eJwtSettings :: SAS.JWTSettings,
+        eRetrieveUserByPhone :: QueryUser,
+        eSendCodeToUser :: SendCodeToUser
+      }
 
-data Handle s = Handle
-  { hParams :: Model.Parameters,
-    hLogger :: Log.LoggerConfig,
-    hJwtSettings :: SAS.JWTSettings,
-    hRetrieveUserByPhone :: QueryUser,
-    hSendCodeToUser :: SendCodeToUser,
-    hStorage :: s
-  }
+data Handle s
+  = Handle
+      { hParams :: Model.Parameters,
+        hLogger :: Log.LoggerConfig,
+        hJwtSettings :: SAS.JWTSettings,
+        hRetrieveUserByPhone :: QueryUser,
+        hSendCodeToUser :: SendCodeToUser,
+        hStorage :: s
+      }
 
 phoneVerificationAPItype :: Proxy PhoneAuthAPI
 phoneVerificationAPItype = Proxy
@@ -126,13 +127,17 @@ tryConfirmCode Handle {..} CodeConfirmationRequest {..} =
       -- logDebug logger $
       -- "Retrieving user by phone "
       -- <> tshow tccrPhone
-    authenticatedUser <- liftIO $ hRetrieveUserByPhone phone
+    authenticatedUser <- lift $ hRetrieveUserByPhone phone
     eiToken <- liftIO $ SAS.makeJWT authenticatedUser hJwtSettings Nothing
     -- logInfo logger $ "Token generated for phone " <> tshow tccrPhone
     either internalError (pure . CodeConfirmationResponseSuccess) eiToken
   where
     -- logger = logFormatted hLogger
-    internalError e = throw err500
+    internalError e =
+      throwError $
+        CodeConfirmationResponseFail
+          "internalError"
+          "Internal error occured."
     --  do
     -- let logMsg = "Error happened during code confirming: " <> tshow e
     -- logError logger logMsg >> throw err500

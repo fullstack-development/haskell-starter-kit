@@ -9,6 +9,7 @@ where
 
 import AppName.API.User (UserSerializer (..))
 import AppName.AppHandle (AppHandle (..))
+import AppName.AppHandle (MonadHandler)
 import AppName.Auth (AuthenticatedUser (AuthenticatedClient))
 import qualified AppName.Domain.PhoneVerification as Phone
 import AppName.Gateways.Database
@@ -18,13 +19,10 @@ import AppName.Gateways.Database
     loadUserById,
     loadUserByPhone,
   )
-import Control.Exception.Safe (MonadThrow, throw)
 import Control.Monad.IO.Unlift (MonadIO (liftIO))
 import Database.Persist.Postgresql
-import qualified Database.Persist.Postgresql as P
-import Servant (err401, err404)
+import qualified Ext.Logger.Colog as Log
 import qualified Servant.Auth.Server as SAS
-import AppName.AppHandle (MonadHandler)
 
 getUserByIdEndpoint ::
   (MonadHandler m) => AppHandle -> Int -> m (Maybe UserSerializer)
@@ -67,4 +65,6 @@ getCurrentUserEndpoint AppHandle {..} (SAS.Authenticated (AuthenticatedClient us
               userCreatedAt = userCreatedAt,
               userPhone = userPhone
             }
-getCurrentUserEndpoint _ _ = throw err401
+getCurrentUserEndpoint _ _ = do
+  Log.logError "getCurrentUserEndpoint: Unauthorized access"
+  pure Nothing

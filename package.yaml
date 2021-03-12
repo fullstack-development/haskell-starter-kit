@@ -83,6 +83,7 @@ default-extensions:
 - ExplicitForAll
 - TypeOperators
 - DeriveGeneric
+- MonoLocalBinds
 
 library:
   source-dirs: src

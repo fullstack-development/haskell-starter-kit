@@ -7,8 +7,9 @@ module AppName.Server
 where
 
 import AppName.API (API, apiType)
-import AppName.AppHandle (AppHandle (..), withAppHandle)
+import AppName.AppHandle (AppHandle (..), MonadHandler, withAppHandle)
 import AppName.Auth (AuthenticatedUser (AuthenticatedClient), ProtectedServantJWTCtx, defaultJWTSettings)
+import AppName.Auth.Commands
 import qualified AppName.Config as C
 import qualified AppName.Domain.PhoneVerification as Phone
 import AppName.Gateways.Database (User (User), loadUserByPhone, withDbPool, withDbPoolDebug)
@@ -27,6 +28,7 @@ import qualified Data.Pool as Pool
 import Data.Proxy (Proxy (Proxy))
 import Database.Persist.Sql (Entity (entityKey), SqlBackend, fromSqlKey, runSqlPersistMPool)
 import Ext.Logger.Colog (logTextStdout)
+import qualified Ext.Logger.Colog as Log
 import Network.Wai.Handler.Warp
   ( Settings,
     defaultSettings,
@@ -43,7 +45,8 @@ import Network.Wai.Middleware.Cors
   )
 import Network.Wai.Middleware.Servant.Options (provideOptions)
 import Servant
-  ( Context (EmptyContext, (:.)),
+  ( (:<|>) (..),
+    Context ((:.), EmptyContext),
     Handler (Handler),
     Server,
     ServerT,
@@ -51,14 +54,12 @@ import Servant
     hoistServerWithContext,
     serve,
     serveWithContext,
-    (:<|>) (..),
   )
 import qualified Servant.Auth.Server as SAS
-import AppName.Auth.Commands
 
 buildHandlers ::
   forall (mexternal :: * -> *) (minternal :: * -> *).
-  (MonadIO mexternal, MonadIO minternal, MonadThrow minternal) =>
+  (MonadIO mexternal, MonadHandler minternal) =>
   SAS.JWTSettings ->
   AppHandle ->
   mexternal (ServerT API minternal)
@@ -66,6 +67,7 @@ buildHandlers jwtSettings h = do
   phoneVerification <- liftIO buildPhoneVerification
   pure $ fakeLoginEndpoint jwtSettings :<|> phoneVerification :<|> getUserByIdEndpoint h :<|> getCurrentUserEndpoint h
   where
+    -- env = mkEnv h
     buildPhoneVerification :: IO (ServerT Phone.PhoneAuthAPI minternal)
     buildPhoneVerification =
       Phone.phoneVerificationAPI
@@ -78,12 +80,12 @@ buildHandlers jwtSettings h = do
           }
     codePrinter phone code = print $ "code sent: " <> Phone.codeToText code
 
-catchServantErrorsFromIO :: ServerT API IO -> Server API
-catchServantErrorsFromIO =
+catchServantErrorsFromIO :: Log.LogAction IO Log.Message -> ServerT API (Log.LoggerT Log.Message IO) -> Server API
+catchServantErrorsFromIO env =
   hoistServerWithContext
     apiType
     (Proxy :: ProtectedServantJWTCtx)
-    (Handler . ExceptT . try)
+    (Handler . ExceptT . try . Log.usingLoggerT env)
 
 runServer :: C.Config -> IO ()
 runServer config = do
@@ -107,7 +109,7 @@ runServer config = do
           . cors (const $ Just policy)
           . provideOptions apiType
           . serveWithContext apiType cfg
-          . catchServantErrorsFromIO
+          . catchServantErrorsFromIO undefined
           $ handler
   liftIO $ withAppHandle $ server serverSettings
 
