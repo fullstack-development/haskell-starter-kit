@@ -5,29 +5,26 @@ module AppName.Gateways.Endpoints.SaveUsers
   )
 where
 
-import AppName.API.User (AddressSerializer (..), PersonalInfoSerializer (..), UserSerializer (..))
-import AppName.AppHandle (AppHandle (..))
+import AppName.API.User (PersonalInfoSerializer (..))
+import AppName.AppHandle (AppHandle (..), MonadHandler)
 import AppName.Auth (AuthenticatedUser (AuthenticatedClient))
-import qualified AppName.Domain.PhoneVerification as Phone
-import AppName.Gateways.Database
-  ( Key (UserKey),
-    User (..),
-    saveUserPersonalInfo,
-  )
-import Control.Exception.Safe (MonadThrow, throw)
+import AppName.Gateways.Database (saveUserPersonalInfo)
+import Control.Exception.Safe (throw)
 import Control.Monad.IO.Unlift (MonadIO (liftIO))
 import Data.Functor (($>))
 import Database.Persist.Postgresql
-import qualified Database.Persist.Postgresql as P
-import qualified Ext.HTTP.Error as Web
 import qualified Ext.HTTP.Response as Web
-import Servant (err404)
+import qualified Ext.Logger.Colog as Log
+import Servant (err401)
 import qualified Servant.Auth.Server as SAS
 
 saveUserPersonalInfoEndpoint ::
-  (MonadIO m, MonadThrow m) => AppHandle -> SAS.AuthResult AuthenticatedUser -> PersonalInfoSerializer -> m (Web.WebApiHttpResponse ())
+  (MonadHandler m) => AppHandle -> SAS.AuthResult AuthenticatedUser -> PersonalInfoSerializer -> m (Web.WebApiHttpResponse ())
 saveUserPersonalInfoEndpoint AppHandle {..} (SAS.Authenticated (AuthenticatedClient userId)) personalInfoSerializer =
   liftIO . flip runSqlPersistMPool appHandleDbPool $
     saveUserPersonalInfo sqlUserId personalInfoSerializer $> Web.success
   where
     sqlUserId = toSqlKey $ fromIntegral userId
+saveUserPersonalInfoEndpoint _ _ _ = do
+  Log.logError "saveUserPersonalInfoEndpoint: Unauthorized access"
+  liftIO $ throw err401
