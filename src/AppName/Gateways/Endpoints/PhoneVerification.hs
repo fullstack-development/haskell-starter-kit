@@ -24,6 +24,7 @@ import Data.Foldable (traverse_)
 import Data.Proxy (Proxy (..))
 import Data.Time (getCurrentTime)
 import qualified Ext.Logger.Config as Log
+import qualified Ext.Logger.Colog as Log
 import Servant ((:<|>) (..), ServerT)
 import qualified Servant.Auth.Server as SAS
 import System.Random (newStdGen)
@@ -94,7 +95,7 @@ requestCode Handle {..} PhoneConfirmationRequest {..} =
   where
     -- logger = logFormatted hLogger
     tooManyReqs = do
-      -- logError logger $ "Too many requests!"
+      lift $ Log.logError "Too many requests!"
       throwError $
         RequestPhoneConfirmingFail "tooManyRequests" "Try again later."
     invalidPhone e = do

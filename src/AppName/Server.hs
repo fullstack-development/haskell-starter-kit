@@ -80,8 +80,8 @@ buildHandlers jwtSettings h = do
           }
     codePrinter phone code = print $ "code sent: " <> Phone.codeToText code
 
-catchServantErrorsFromIO :: Log.LogAction IO Log.Message -> ServerT API (Log.LoggerT Log.Message IO) -> Server API
-catchServantErrorsFromIO env =
+hoistServerHandler :: Log.LogAction IO Log.Message -> ServerT API (Log.LoggerT Log.Message IO) -> Server API
+hoistServerHandler env =
   hoistServerWithContext
     apiType
     (Proxy :: ProtectedServantJWTCtx)
@@ -109,7 +109,7 @@ runServer config = do
           . cors (const $ Just policy)
           . provideOptions apiType
           . serveWithContext apiType cfg
-          . catchServantErrorsFromIO undefined
+          . hoistServerHandler (Log.mkLogActionIO (appHandleLogger ah))
           $ handler
   liftIO $ withAppHandle $ server serverSettings
 
