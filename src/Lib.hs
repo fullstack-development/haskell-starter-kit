@@ -1,17 +1,17 @@
 module Lib
-  ( runDefaultExample,
-    runMigrationsAndServer,
+  ( runDefaultExample
+  , runServer
   )
 where
 
 import qualified AppName.Config as C
 import AppName.Domain.PhoneVerification (UncheckedPhone (UncheckedPhone), checkPhone)
-import AppName.Gateways.Database (runAllMigrations)
 import AppName.Gateways.Database.Setup (withDbPool, withDbPoolDebug)
 import AppName.Gateways.Database.Tables.User (createUserRecord, loadUserById)
 import AppName.Server (runDevServer)
 import qualified Colog as Log
 import Control.Monad.IO.Unlift (liftIO)
+import Control.Monad.IO.Class (MonadIO)
 import qualified Data.ByteString as BS
 import Data.Either (fromRight)
 import Data.Functor.Contravariant (Contravariant (contramap))
@@ -22,17 +22,15 @@ import qualified Ext.Logger.Config as Log
 runDefaultExample :: IO ()
 runDefaultExample =
   Log.usingLoggerT (Log.mkLogActionIO logConf) $ do
-    liftIO runAllMigrations
     config <- liftIO C.retrieveConfig
     runLogExample
     runDBExample config
     liftIO runDevServer
 
-runMigrationsAndServer :: IO ()
-runMigrationsAndServer =
+runServer :: IO ()
+runServer =
   Log.usingLoggerT (Log.mkLogActionIO logConf) $ do
     runLogExample
-    liftIO runAllMigrations
     Log.logDebug "starting server"
     liftIO runDevServer
 
@@ -44,6 +42,7 @@ logConf =
       logLevel = Log.Debug
     }
 
+runDBExample :: MonadIO m => C.Config -> m ()
 runDBExample config =
   liftIO
     . withDbPoolDebug config
