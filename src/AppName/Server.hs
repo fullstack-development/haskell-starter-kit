@@ -8,11 +8,10 @@ where
 
 import AppName.API (API, apiType)
 import AppName.AppHandle (AppHandle (..), MonadHandler, withAppHandle)
-import AppName.Auth (AuthenticatedUser (AuthenticatedClient), ProtectedServantJWTCtx, defaultJWTSettings)
+import AppName.Auth (ProtectedServantJWTCtx)
 import AppName.Auth.Commands
 import qualified AppName.Config as C
 import qualified AppName.Domain.PhoneVerification as Phone
-import AppName.Gateways.Database (User (User), loadUserByPhone, withDbPool, withDbPoolDebug)
 import AppName.Gateways.Endpoints.FakeLogin (fakeLoginEndpoint)
 import AppName.Gateways.Endpoints.GetUsers
   ( getCurrentUserEndpoint,
@@ -20,24 +19,18 @@ import AppName.Gateways.Endpoints.GetUsers
     getUserByIdEndpoint,
   )
 import qualified AppName.Gateways.Endpoints.PhoneVerification as Phone
-import Control.Exception.Safe (MonadThrow, throw, try)
-import Control.Monad (unless)
+import Control.Exception.Safe (try)
 import Control.Monad.Except (ExceptT (ExceptT))
 import Control.Monad.IO.Class (MonadIO, liftIO)
-import qualified Data.Pool as Pool
 import Data.Proxy (Proxy (Proxy))
-import Database.Persist.Sql (Entity (entityKey), SqlBackend, fromSqlKey, runSqlPersistMPool)
-import Ext.Logger.Colog (logTextStdout)
 import qualified Ext.Logger.Colog as Log
 import Network.Wai.Handler.Warp
   ( Settings,
     defaultSettings,
     runSettings,
     setBeforeMainLoop,
-    setLogger,
     setPort,
   )
-import Network.Wai.Logger (withStdoutLogger)
 import Network.Wai.Middleware.Cors
   ( cors,
     corsRequestHeaders,
@@ -45,15 +38,13 @@ import Network.Wai.Middleware.Cors
   )
 import Network.Wai.Middleware.Servant.Options (provideOptions)
 import Servant
-  ( (:<|>) (..),
-    Context ((:.), EmptyContext),
+  ( Context (EmptyContext, (:.)),
     Handler (Handler),
     Server,
     ServerT,
-    err404,
     hoistServerWithContext,
-    serve,
     serveWithContext,
+    (:<|>) (..),
   )
 import qualified Servant.Auth.Server as SAS
 
@@ -73,12 +64,11 @@ buildHandlers jwtSettings h = do
       Phone.phoneVerificationAPI
         Phone.defParams
         Phone.Externals
-          { eLogger = appHandleLogger h,
-            eJwtSettings = jwtSettings,
+          { eJwtSettings = jwtSettings,
             eRetrieveUserByPhone = getOrCreateUserByPhoneEndpoint h,
             eSendCodeToUser = codePrinter
           }
-    codePrinter phone code = print $ "code sent: " <> Phone.codeToText code
+    codePrinter _phone code = print $ "code sent: " <> Phone.codeToText code
 
 hoistServerHandler :: Log.LogAction IO Log.Message -> ServerT API (Log.LoggerT Log.Message IO) -> Server API
 hoistServerHandler env =

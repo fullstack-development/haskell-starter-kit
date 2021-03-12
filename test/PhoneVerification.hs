@@ -2,7 +2,7 @@ module PhoneVerification where
 
 import AppName.API.PhoneVerification (PhoneAuthAPI)
 import AppName.Auth (AuthenticatedUser (AuthenticatedClient), defaultJWTSettings, retrieveKey)
-import AppName.Auth.Commands (createKey, checkAuthKey)
+import AppName.Auth.Commands (checkAuthKey, createKey)
 import qualified AppName.Config as C
 import AppName.Domain.PhoneVerification (Code, Phone, codeToText, defParams, phoneToText)
 import AppName.Gateways.Endpoints.PhoneVerification (Externals (..), phoneVerificationAPI)
@@ -14,6 +14,8 @@ import Control.Concurrent.STM
     readTVarIO,
     writeTVar,
   )
+import Control.Exception.Safe (MonadThrow, throw, try)
+import Control.Monad.Except (ExceptT (ExceptT))
 import Data.Aeson as J
 import qualified Data.Aeson.Types as J
 import qualified Data.ByteString as B
@@ -30,7 +32,8 @@ import qualified Ext.Logger.Config as Log
 import Network.HTTP.Types (Header, methodPost)
 import Network.Wai
 import Network.Wai.Test (SResponse)
-import Servant (serve, hoistServer, Handler(..))
+import Servant (Handler (..), hoistServer, serve)
+import qualified Servant.Auth.Server as SAS
 import qualified System.Directory as FS
 import System.Environment (setEnv)
 import Test.Hspec.Wai
@@ -54,9 +57,6 @@ import Test.Tasty.Hspec
     shouldSatisfy,
     testSpec,
   )
-import qualified Servant.Auth.Server as SAS
-import Control.Monad.Except (ExceptT (ExceptT))
-import Control.Exception.Safe (MonadThrow, throw, try)
 
 main :: IO ()
 main = do
@@ -94,8 +94,7 @@ mkApp onSendCode (MockUser userId) = do
           }
       mockExternals =
         Externals
-          { eLogger = logConf,
-            eJwtSettings = defaultJWTSettings authKey,
+          { eJwtSettings = defaultJWTSettings authKey,
             eRetrieveUserByPhone =
               \_ -> pure $ AuthenticatedClient userId,
             eSendCodeToUser = onSendCode
