@@ -1,22 +1,24 @@
 {-# LANGUAGE DataKinds #-}
 
 module AppName.Gateways.Endpoints.FakeLogin
-  ( LoginResponse,
+  ( LoginResponse (..),
     LoginData,
     fakeLoginEndpoint,
   )
 where
 
+import AppName.AppHandle (MonadHandler)
 import AppName.Auth.User (AuthenticatedUser (..))
-import Control.Exception.Safe (MonadThrow, throw)
+import Control.Exception.Safe (throw)
 import Control.Monad.IO.Unlift (MonadIO (liftIO))
 import Crypto.JOSE (Error)
 import Data.Aeson ((.=))
 import qualified Data.Aeson as J
 import qualified Data.ByteString.Lazy as BL
 import qualified Ext.Data.Aeson as J
+import qualified Ext.Logger.Colog as Log
 import GHC.Generics (Generic)
-import Servant (Handler, JSON, Post, ReqBody, err401, throwError, (:>))
+import Servant (err401)
 import qualified Servant.Auth.Server as SAS
 
 data LoginData = LoginData
@@ -49,7 +51,7 @@ instance J.ToJSON LoginResponse where
             ]
       ]
 
-fakeLoginEndpoint :: (MonadIO m, MonadThrow m) => SAS.JWTSettings -> LoginData -> m LoginResponse
+fakeLoginEndpoint :: (MonadHandler m) => SAS.JWTSettings -> LoginData -> m LoginResponse
 fakeLoginEndpoint jwtSettings (LoginData userId "Open Sesame") = do
   token <-
     liftIO $
@@ -58,4 +60,6 @@ fakeLoginEndpoint jwtSettings (LoginData userId "Open Sesame") = do
         jwtSettings
         Nothing
   either (pure . LoginResponseError) (pure . LoginResponseSuccess) token
-fakeLoginEndpoint _ _ = throw err401
+fakeLoginEndpoint _ _ = do
+  Log.logError "fakeLoginEndpoint: Unauthorized access"
+  liftIO $ throw err401

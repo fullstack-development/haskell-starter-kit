@@ -13,8 +13,6 @@ where
 
 import AppName.Auth.ServantInstances ()
 import AppName.Auth.User as Export
-import Control.Exception.Safe (MonadThrow)
-import Control.Monad.IO.Class
 import Crypto.JOSE.JWK (JWK)
 import Data.Proxy
 import Servant
