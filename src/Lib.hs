@@ -1,12 +1,12 @@
 module Lib
-  ( runDefaultExample
-  , runServer
+  ( runDefaultExample,
+    runServer,
   )
 where
 
 import qualified AppName.Config as C
 import AppName.Domain.PhoneVerification (UncheckedPhone (UncheckedPhone), checkPhone)
-import AppName.Gateways.Database (runAllMigrations, withDbPoolDebug)
+import AppName.Gateways.Database (withDbPoolDebug)
 import AppName.Gateways.Database.Tables.User (createUserRecord, loadUserById)
 import AppName.Server (runDevServer)
 import qualified Colog as Log
