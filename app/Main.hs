@@ -2,11 +2,11 @@ module Main where
 
 import Control.Monad (unless)
 import Ext.Logger.Colog (setLineBuffering)
-import Lib (runMigrationsAndServer)
+import Lib (runServer)
 import qualified System.Directory as FS
 
 main :: IO ()
-main = setLineBuffering >> checkLocalConfig >> runMigrationsAndServer
+main = setLineBuffering >> checkLocalConfig >> runServer
 
 checkLocalConfig :: IO ()
 checkLocalConfig = do

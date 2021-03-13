@@ -21,4 +21,4 @@ allMigrations =
 runAllMigrations :: IO ()
 runAllMigrations = do
   conf <- C.retrieveConfig
-  withDbPoolDebug conf $ \pool -> liftIO $ runSqlPersistMPool migrateAll pool
+  withDbPoolDebug conf $ liftIO . runSqlPersistMPool migrateAll

@@ -1,6 +1,6 @@
 module Lib
-  ( runDefaultExample,
-    runMigrationsAndServer,
+  ( runDefaultExample
+  , runServer
   )
 where
 
@@ -18,17 +18,15 @@ import qualified Ext.Logger.Config as Log
 runDefaultExample :: IO ()
 runDefaultExample =
   Log.usingLoggerT (Log.mkLogActionIO logConf) $ do
-    liftIO runAllMigrations
     config <- liftIO C.retrieveConfig
     runLogExample
     runDBExample config
     liftIO runDevServer
 
-runMigrationsAndServer :: IO ()
-runMigrationsAndServer =
+runServer :: IO ()
+runServer =
   Log.usingLoggerT (Log.mkLogActionIO logConf) $ do
     runLogExample
-    liftIO runAllMigrations
     Log.logDebug "starting server"
     liftIO runDevServer
 
