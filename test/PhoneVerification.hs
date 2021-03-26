@@ -6,6 +6,7 @@ import AppName.Auth.Commands (checkAuthKey, createKey)
 import qualified AppName.Config as C
 import AppName.Domain.PhoneVerification (Code, Phone, codeToText, defParams, phoneToText)
 import AppName.Gateways.Endpoints.PhoneVerification (Externals (..), phoneVerificationAPI)
+import qualified AppName.Gateways.StatefulRandomGenerator as StatefulRandomGenerator
 import Control.Concurrent.STM
   ( TVar,
     atomically,
@@ -36,6 +37,7 @@ import Servant (Handler (..), hoistServer, serve)
 import qualified Servant.Auth.Server as SAS
 import qualified System.Directory as FS
 import System.Environment (setEnv)
+import System.Random (newStdGen)
 import Test.Hspec.Wai
   ( MatchBody (..),
     ResponseMatcher (..),
@@ -85,6 +87,7 @@ mkApp onSendCode (MockUser userId) = do
   config <- C.retrieveConfig
   authKeyPath <- C.getKeysFilePath config
   authKey <- SAS.readKey authKeyPath
+  randomGen <- StatefulRandomGenerator.newAtomicGen =<< newStdGen
   let logConf :: Log.LoggerConfig
       logConf =
         Log.LoggerConfig
@@ -95,9 +98,9 @@ mkApp onSendCode (MockUser userId) = do
       mockExternals =
         Externals
           { eJwtSettings = defaultJWTSettings authKey,
-            eRetrieveUserByPhone =
-              \_ -> pure $ AuthenticatedClient userId,
-            eSendCodeToUser = onSendCode
+            eRetrieveUserByPhone = \_ -> pure $ AuthenticatedClient userId,
+            eSendCodeToUser = onSendCode,
+            eRandomGen = randomGen
           }
   impl <- phoneVerificationAPI defParams mockExternals
   pure $ serve api $ hoistServer api hoistTestServer impl

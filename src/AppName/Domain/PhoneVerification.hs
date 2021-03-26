@@ -86,9 +86,9 @@ defParams = Parameters {pCodeLength = 4, pCodeExpiration = fiveMinutes}
     fiveMinutes = 60 * 5
 
 genConfirmationCode ::
-  RandomGen g => CheckedPhone -> Parameters -> g -> PhoneConfirmationCode
+  RandomGen g => CheckedPhone -> Parameters -> g -> (PhoneConfirmationCode, g)
 genConfirmationCode _ Parameters {..} gen =
-  PhoneConfirmationCode $ generate (variants gen) pCodeLength gen
+  (PhoneConfirmationCode $ generate (variants gen) pCodeLength gen, gen)
   where
     generate vars curLen curGen
       | curLen > 0 =
