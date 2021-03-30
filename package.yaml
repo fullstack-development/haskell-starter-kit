@@ -34,6 +34,9 @@ dependencies:
 - random-shuffle
 - stm
 - directory
+- cryptonite
+- memory
+- basement
 
 - configurator
 - resourcet

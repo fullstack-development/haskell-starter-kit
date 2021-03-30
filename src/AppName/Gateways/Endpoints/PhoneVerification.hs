@@ -1,5 +1,4 @@
 {-# LANGUAGE ConstraintKinds #-}
-{-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
 
@@ -15,8 +14,8 @@ import AppName.API.PhoneVerification
 import AppName.AppHandle (MonadHandler)
 import AppName.Auth.User (AuthenticatedUser)
 import qualified AppName.Domain.PhoneVerification as Model
+import qualified AppName.Gateways.CryptoRandomGen as CryptoRandomGen
 import qualified AppName.Gateways.PhoneVerificationStorage as S
-import qualified AppName.Gateways.StatefulRandomGenerator as StatefulRandomGenerator
 import Control.Exception.Safe (throw)
 import Control.Monad (unless, when)
 import Control.Monad.Except (runExceptT, throwError)
@@ -30,7 +29,6 @@ import Ext.Data.Text (tshow)
 import qualified Ext.Logger.Colog as Log
 import Servant (ServerT, err500, (:<|>) (..))
 import qualified Servant.Auth.Server as SAS
-import System.Random (RandomGen)
 
 type QueryUser =
   forall m.
@@ -40,24 +38,20 @@ type QueryUser =
 
 type SendCodeToUser = Model.Phone -> Model.Code -> IO ()
 
-data Externals = forall gen.
-  RandomGen gen =>
-  Externals
+data Externals = Externals
   { eJwtSettings :: SAS.JWTSettings,
     eRetrieveUserByPhone :: QueryUser,
     eSendCodeToUser :: SendCodeToUser,
-    eRandomGen :: StatefulRandomGenerator.AtomicGen gen
+    eRandomGen :: CryptoRandomGen.Ref
   }
 
-data Handle s = forall gen.
-  RandomGen gen =>
-  Handle
+data Handle s = Handle
   { hParams :: Model.Parameters,
     hJwtSettings :: SAS.JWTSettings,
     hRetrieveUserByPhone :: QueryUser,
     hSendCodeToUser :: SendCodeToUser,
     hStorage :: s,
-    hRandomGen :: StatefulRandomGenerator.AtomicGen gen
+    hRandomGen :: CryptoRandomGen.Ref
   }
 
 phoneVerificationAPItype :: Proxy PhoneAuthAPI
@@ -92,7 +86,7 @@ requestCode Handle {..} PhoneConfirmationRequest {..} =
     time <- liftIO getCurrentTime
     mbExisting <- S.getFromStorage phone hStorage
     traverse_ (bool tooManyReqs (pure ()) . Model.isConfirmReqExpired time) mbExisting
-    code <- liftIO $ StatefulRandomGenerator.withRandomState (Model.genConfirmationCode phone hParams) hRandomGen
+    code <- liftIO $ CryptoRandomGen.withRef hRandomGen $ Model.genConfirmationCode phone hParams
     let waiting = Model.WaitConfirmationEntry phone code time
     S.setToStorage phone waiting hStorage
     liftIO $ hSendCodeToUser phone code
