@@ -18,7 +18,7 @@ stop:
 	docker-compose down
 
 prune: stop
-	docker volume rm haskellstarterkit_pg-data
+	docker volume rm haskell-starter-kit_pg-data
 
 style:
 	@cd "$$(git rev-parse --show-toplevel)" && ./scripts/format-code
