@@ -86,7 +86,7 @@ requestCode Handle {..} PhoneConfirmationRequest {..} =
     time <- liftIO getCurrentTime
     mbExisting <- S.getFromStorage phone hStorage
     traverse_ (bool tooManyReqs (pure ()) . Model.isConfirmReqExpired time) mbExisting
-    code <- liftIO $ CryptoRandomGen.withRef hRandomGen $ Model.genConfirmationCode phone hParams
+    code <- liftIO $ CryptoRandomGen.withRef hRandomGen $ Model.genConfirmationCode hParams
     let waiting = Model.WaitConfirmationEntry phone code time
     S.setToStorage phone waiting hStorage
     liftIO $ hSendCodeToUser phone code

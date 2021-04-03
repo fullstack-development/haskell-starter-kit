@@ -85,9 +85,8 @@ defParams = Parameters {pCodeLength = 4, pCodeExpiration = fiveMinutes}
   where
     fiveMinutes = 60 * 5
 
-genConfirmationCode ::
-  RandomGen g => CheckedPhone -> Parameters -> g -> (PhoneConfirmationCode, g)
-genConfirmationCode _ Parameters {..} = loop pCodeLength []
+genConfirmationCode :: RandomGen g => Parameters -> g -> (PhoneConfirmationCode, g)
+genConfirmationCode Parameters {..} = loop pCodeLength []
   where
     loop len list gen
       | len > 0 =
