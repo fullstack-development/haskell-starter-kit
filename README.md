@@ -25,6 +25,14 @@ make run
 
 ## Develop with stack
 
+To format source code, use:
+
+`make style`
+
+We use a specific version of the ormolu formatter. It will be installed
+automatically for the first time into an internal location using stack. It will
+not overwrite your locally installed ormolu version in `~/.stack/bin`.
+
 To build project:
 
 `stack build`
