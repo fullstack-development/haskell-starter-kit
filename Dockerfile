@@ -1,8 +1,10 @@
 # starterkit/project:latest
 FROM starterkit/dependencies:latest
 
-COPY ./ new/
-RUN cp -rf new/* /haskell-starter-kit/ && rm -rf new/
+# Clean up files to avoid problems with files deleted in the project,
+# but remaining in the image, that would confuse 'stack build'.
+RUN rm -rf /haskell-starter-kit
+COPY ./ /haskell-starter-kit/
 
 WORKDIR /haskell-starter-kit/
 RUN stack build

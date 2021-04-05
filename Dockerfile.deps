@@ -11,3 +11,8 @@ COPY ./ haskell-starter-kit/
 WORKDIR /haskell-starter-kit/
 RUN stack setup
 RUN stack build --only-dependencies
+
+# Clean up files to avoid problems with files deleted in the project,
+# but remaining in the image, that would confuse 'stack build'.
+WORKDIR /
+RUN rm -rf /haskell-starter-kit
