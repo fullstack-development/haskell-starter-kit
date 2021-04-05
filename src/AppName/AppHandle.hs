@@ -19,12 +19,11 @@ import Database.Persist.Sql (SqlBackend)
 import qualified Ext.Logger.Colog as Log
 import Ext.Logger.Config (LoggerConfig)
 
-data AppHandle
-  = AppHandle
-      { appHandleDbPool :: Pool SqlBackend,
-        appHandleConfig :: C.Config,
-        appHandleLogger :: LoggerConfig
-      }
+data AppHandle = AppHandle
+  { appHandleDbPool :: Pool SqlBackend,
+    appHandleConfig :: C.Config,
+    appHandleLogger :: LoggerConfig
+  }
 
 type MonadHandler m = (MonadIO m, Log.WithLog (Log.LogAction m Log.Message) Log.Message m)
 
