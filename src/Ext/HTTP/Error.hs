@@ -2,16 +2,17 @@
 
 module Ext.HTTP.Error where
 
-import qualified Data.Aeson as J
 import Data.Aeson ((.=))
+import qualified Data.Aeson as J
 import Data.Maybe (maybeToList)
 import qualified Data.Text as T
 
 data WebApiHttpError = WebApiHttpError
-  { waheMessage :: T.Text
-  , waheCode :: T.Text
-  , waheData :: Maybe J.Value
-  } deriving (Show, Eq)
+  { waheMessage :: T.Text,
+    waheCode :: T.Text,
+    waheData :: Maybe J.Value
+  }
+  deriving (Show, Eq)
 
 instance J.ToJSON WebApiHttpError where
   toJSON WebApiHttpError {..} =
