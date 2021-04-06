@@ -1,6 +1,6 @@
 name:                haskell-starter-kit
 version:             0.1.0.0
-github:              "githubuser/haskell-starter-kit"
+github:              "fullstack-development/haskell-starter-kit"
 license:             BSD3
 author:              "Author name here"
 maintainer:          "example@example.com"
