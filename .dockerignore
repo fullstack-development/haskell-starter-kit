@@ -4,4 +4,3 @@
 # needed for stack
 .stack-work/
 *~
-stack.yaml.lock
