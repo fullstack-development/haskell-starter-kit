@@ -31,7 +31,6 @@ dependencies:
 - safe-exceptions
 - typerep-map
 - random
-- random-shuffle
 - stm
 - directory
 - cryptonite
