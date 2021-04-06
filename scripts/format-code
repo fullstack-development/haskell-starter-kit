@@ -9,5 +9,7 @@ ROOT=$(git rev-parse --show-toplevel)
 cd "$ROOT"
 
 FMT=$(stack exec --package ormolu-"$ORMOLU_VERSION" which ormolu)
-find src app test -type f -name \*.hs -exec "$FMT" $ORMOLU_OPTIONS '{}' +
+find . \( -path ./stack-work -o -path ./.git \) -prune \
+       -o -type f -name \*.hs \
+       -exec "$FMT" $ORMOLU_OPTIONS '{}' +
 
