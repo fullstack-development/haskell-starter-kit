@@ -4,7 +4,6 @@
 # needed for stack
 .stack-work/
 *~
-stack.yaml.lock
 haskell-starter-kit.cabal
 
 # Auth key
