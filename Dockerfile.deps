@@ -1,10 +1,9 @@
 # starterkit/dependencies:latest
 FROM ubuntu:bionic
 
-RUN apt-get update && apt-get install -y curl
+RUN apt-get update && apt-get install -y curl libghc-postgresql-libpq-dev
 RUN curl -sSL https://get.haskellstack.org/ | sh
-
-RUN apt-get install -y libghc-postgresql-libpq-dev
+RUN stack update
 
 COPY ./ haskell-starter-kit/
 
