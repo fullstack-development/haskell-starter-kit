@@ -10,6 +10,7 @@ module AppName.AppHandle
 where
 
 import qualified AppName.Config as C
+import qualified AppName.Gateways.CryptoRandomGen as CryptoRandomGen
 import AppName.Gateways.Database (withDbPool)
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.IO.Unlift (MonadIO)
@@ -22,7 +23,8 @@ import Ext.Logger.Config (LoggerConfig)
 data AppHandle = AppHandle
   { appHandleDbPool :: Pool SqlBackend,
     appHandleConfig :: C.Config,
-    appHandleLogger :: LoggerConfig
+    appHandleLogger :: LoggerConfig,
+    appHandleRandomGen :: CryptoRandomGen.Ref
   }
 
 type MonadHandler m = (MonadIO m, Log.WithLog (Log.LogAction m Log.Message) Log.Message m)
@@ -31,5 +33,6 @@ withAppHandle :: (AppHandle -> NoLoggingT IO b) -> IO b
 withAppHandle action = do
   config <- C.retrieveConfig
   loggerConfig <- C.getLoggerConfig config
+  randomGen <- CryptoRandomGen.newRef
   liftIO . withDbPool config $ \pool ->
-    action $ AppHandle pool config loggerConfig
+    action $ AppHandle pool config loggerConfig randomGen

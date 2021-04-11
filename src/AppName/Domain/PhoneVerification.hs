@@ -1,3 +1,4 @@
+{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE RecordWildCards #-}
 
@@ -24,7 +25,6 @@ import Data.Maybe (catMaybes)
 import qualified Data.Text as T
 import Data.Time (UTCTime, diffUTCTime)
 import System.Random (RandomGen, randomR)
-import System.Random.Shuffle (shuffle')
 import Text.Read (readMaybe)
 
 type PhoneNumber = T.Text
@@ -85,20 +85,14 @@ defParams = Parameters {pCodeLength = 4, pCodeExpiration = fiveMinutes}
   where
     fiveMinutes = 60 * 5
 
-genConfirmationCode ::
-  RandomGen g => CheckedPhone -> Parameters -> g -> PhoneConfirmationCode
-genConfirmationCode _ Parameters {..} gen =
-  PhoneConfirmationCode $ generate (variants gen) pCodeLength gen
+genConfirmationCode :: RandomGen g => Parameters -> g -> (PhoneConfirmationCode, g)
+genConfirmationCode Parameters {..} = loop pCodeLength []
   where
-    generate vars curLen curGen
-      | curLen > 0 =
-        let (i, nextGen) = randomR range curGen
-         in (vars !! i) : generate vars (pred curLen) nextGen
-      | otherwise = []
-    variants = shuffle' baseVariants $ length baseVariants
-    range = (0, pred $ length baseVariants)
-    baseVariants :: [Int]
-    baseVariants = [0 .. 9]
+    loop len list gen
+      | len > 0 =
+        let !(!digit, !gen') = randomR (0, 9) gen
+         in loop (pred len) (digit : list) gen'
+      | otherwise = (PhoneConfirmationCode list, gen)
 
 data WaitConfirmationEntry
   = WaitConfirmationEntry

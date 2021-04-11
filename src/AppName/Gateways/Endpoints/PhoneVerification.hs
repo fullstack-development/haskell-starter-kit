@@ -14,6 +14,7 @@ import AppName.API.PhoneVerification
 import AppName.AppHandle (MonadHandler)
 import AppName.Auth.User (AuthenticatedUser)
 import qualified AppName.Domain.PhoneVerification as Model
+import qualified AppName.Gateways.CryptoRandomGen as CryptoRandomGen
 import qualified AppName.Gateways.PhoneVerificationStorage as S
 import Control.Exception.Safe (throw)
 import Control.Monad (unless, when)
@@ -28,7 +29,6 @@ import Ext.Data.Text (tshow)
 import qualified Ext.Logger.Colog as Log
 import Servant (ServerT, err500, (:<|>) (..))
 import qualified Servant.Auth.Server as SAS
-import System.Random (newStdGen)
 
 type QueryUser =
   forall m.
@@ -41,7 +41,8 @@ type SendCodeToUser = Model.Phone -> Model.Code -> IO ()
 data Externals = Externals
   { eJwtSettings :: SAS.JWTSettings,
     eRetrieveUserByPhone :: QueryUser,
-    eSendCodeToUser :: SendCodeToUser
+    eSendCodeToUser :: SendCodeToUser,
+    eRandomGen :: CryptoRandomGen.Ref
   }
 
 data Handle s = Handle
@@ -49,7 +50,8 @@ data Handle s = Handle
     hJwtSettings :: SAS.JWTSettings,
     hRetrieveUserByPhone :: QueryUser,
     hSendCodeToUser :: SendCodeToUser,
-    hStorage :: s
+    hStorage :: s,
+    hRandomGen :: CryptoRandomGen.Ref
   }
 
 phoneVerificationAPItype :: Proxy PhoneAuthAPI
@@ -68,7 +70,8 @@ phoneVerificationAPI params Externals {..} = do
             hJwtSettings = eJwtSettings,
             hRetrieveUserByPhone = eRetrieveUserByPhone,
             hSendCodeToUser = eSendCodeToUser,
-            hStorage = storage
+            hStorage = storage,
+            hRandomGen = eRandomGen
           }
   pure $ requestCode h :<|> tryConfirmCode h
 
@@ -83,7 +86,7 @@ requestCode Handle {..} PhoneConfirmationRequest {..} =
     time <- liftIO getCurrentTime
     mbExisting <- S.getFromStorage phone hStorage
     traverse_ (bool tooManyReqs (pure ()) . Model.isConfirmReqExpired time) mbExisting
-    code <- Model.genConfirmationCode phone hParams <$> liftIO newStdGen
+    code <- liftIO $ CryptoRandomGen.withRef hRandomGen $ Model.genConfirmationCode hParams
     let waiting = Model.WaitConfirmationEntry phone code time
     S.setToStorage phone waiting hStorage
     liftIO $ hSendCodeToUser phone code

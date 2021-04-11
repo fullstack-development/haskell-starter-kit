@@ -5,6 +5,7 @@ import AppName.Auth (AuthenticatedUser (AuthenticatedClient), defaultJWTSettings
 import AppName.Auth.Commands (checkAuthKey, createKey)
 import qualified AppName.Config as C
 import AppName.Domain.PhoneVerification (Code, Phone, codeToText, defParams, phoneToText)
+import qualified AppName.Gateways.CryptoRandomGen as CryptoRandomGen
 import AppName.Gateways.Endpoints.PhoneVerification (Externals (..), phoneVerificationAPI)
 import Control.Concurrent.STM
   ( TVar,
@@ -85,6 +86,7 @@ mkApp onSendCode (MockUser userId) = do
   config <- C.retrieveConfig
   authKeyPath <- C.getKeysFilePath config
   authKey <- SAS.readKey authKeyPath
+  randomGen <- CryptoRandomGen.newRef
   let logConf :: Log.LoggerConfig
       logConf =
         Log.LoggerConfig
@@ -95,9 +97,9 @@ mkApp onSendCode (MockUser userId) = do
       mockExternals =
         Externals
           { eJwtSettings = defaultJWTSettings authKey,
-            eRetrieveUserByPhone =
-              \_ -> pure $ AuthenticatedClient userId,
-            eSendCodeToUser = onSendCode
+            eRetrieveUserByPhone = \_ -> pure $ AuthenticatedClient userId,
+            eSendCodeToUser = onSendCode,
+            eRandomGen = randomGen
           }
   impl <- phoneVerificationAPI defParams mockExternals
   pure $ serve api $ hoistServer api hoistTestServer impl

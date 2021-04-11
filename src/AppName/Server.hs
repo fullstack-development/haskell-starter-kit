@@ -67,7 +67,8 @@ buildHandlers jwtSettings h = do
         Phone.Externals
           { eJwtSettings = jwtSettings,
             eRetrieveUserByPhone = getOrCreateUserByPhoneEndpoint h,
-            eSendCodeToUser = codePrinter
+            eSendCodeToUser = codePrinter,
+            eRandomGen = appHandleRandomGen h
           }
     codePrinter _phone code = print $ "code sent: " <> Phone.codeToText code
 
