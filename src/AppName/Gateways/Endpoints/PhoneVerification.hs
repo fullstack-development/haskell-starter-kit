@@ -26,7 +26,7 @@ import Data.Foldable (traverse_)
 import Data.Proxy (Proxy (..))
 import Data.Time (getCurrentTime)
 import Ext.Data.Text (tshow)
-import qualified Ext.Logger.Colog as Log
+import qualified Ext.Logger as Log
 import Servant (ServerT, err500, (:<|>) (..))
 import qualified Servant.Auth.Server as SAS
 
@@ -93,11 +93,11 @@ requestCode Handle {..} PhoneConfirmationRequest {..} =
     pure RequestPhoneConfirmingSuccess
   where
     tooManyReqs = do
-      lift $ Log.logError "Too many requests!"
+      lift $ Log.error "Too many requests!"
       throwError $
         RequestPhoneConfirmingFail "tooManyRequests" "Try again later."
     invalidPhone e = do
-      lift $ Log.logError $ "Invalid phone in phone code auth: " <> tshow e
+      lift $ Log.error $ "Invalid phone in phone code auth: " <> tshow e
       throwError $ RequestPhoneConfirmingFail "invalidPhone" "Phone is invalid."
     run action = runExceptT action >>= either pure pure
 
@@ -109,7 +109,7 @@ tryConfirmCode ::
   m CodeConfirmationResponse
 tryConfirmCode Handle {..} CodeConfirmationRequest {..} =
   run $ do
-    lift . Log.logDebug $ "New confirm code request for phone - " <> tshow tccrPhone
+    lift . Log.debug $ "New confirm code request for phone - " <> tshow tccrPhone
     phone <- either invalidPhone pure $ Model.checkPhone tccrPhone
     mbWaiting <- S.getFromStorage phone hStorage
     waiting <- maybe confirmRequestNotFound pure mbWaiting
@@ -123,35 +123,35 @@ tryConfirmCode Handle {..} CodeConfirmationRequest {..} =
     unless
       isCodeCorrect
       incorrectCode -- TODO: add attempts count
-    lift . Log.logDebug $ "Retrieving user by phone " <> tshow tccrPhone
+    lift . Log.debug $ "Retrieving user by phone " <> tshow tccrPhone
     authenticatedUser <- lift $ hRetrieveUserByPhone phone
     eiToken <- liftIO $ SAS.makeJWT authenticatedUser hJwtSettings Nothing
-    lift . Log.logInfo $ "Token generated for phone " <> tshow tccrPhone
+    lift . Log.info $ "Token generated for phone " <> tshow tccrPhone
     either internalError (pure . CodeConfirmationResponseSuccess) eiToken
   where
     internalError e =
       do
         let logMsg = "Error happened during code confirming: " <> tshow e
-        lift (Log.logError logMsg)
+        lift (Log.error logMsg)
         liftIO $ throw err500
     incorrectCode = do
-      lift . Log.logError $ "Entered code is incorrect"
+      lift . Log.error $ "Entered code is incorrect"
       throwError $
         CodeConfirmationResponseFail
           "incorrectCode"
           "Provided code was incorrect."
     codeConfirmTimeExpired = do
-      lift . Log.logError $ "Entered code is expired"
+      lift . Log.error $ "Entered code is expired"
       throwError $
         CodeConfirmationResponseFail "expired" "Code confirmation has expired."
     confirmRequestNotFound = do
-      lift . Log.logError $ "Code should be requested first"
+      lift . Log.error $ "Code should be requested first"
       throwError $
         CodeConfirmationResponseFail
           "shouldBeRequestedFirst"
           "Need to request code first."
     invalidPhone e = do
-      lift . Log.logError $ "Phone is invalid for code confirmation: " <> tshow e
+      lift . Log.error $ "Phone is invalid for code confirmation: " <> tshow e
       throwError $
         CodeConfirmationResponseFail "invalidPhone" "Phone is invalid."
     run action = runExceptT action >>= either pure pure

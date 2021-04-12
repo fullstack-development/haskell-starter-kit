@@ -14,7 +14,7 @@ import Control.Monad.IO.Unlift (MonadIO (liftIO))
 import Data.Functor (($>))
 import Database.Persist.Postgresql (runSqlPersistMPool, toSqlKey)
 import qualified Ext.HTTP.Response as Web
-import qualified Ext.Logger.Colog as Log
+import qualified Ext.Logger as Log
 import Servant (err401)
 import qualified Servant.Auth.Server as SAS
 
@@ -26,5 +26,5 @@ saveUserPersonalInfoEndpoint AppHandle {..} (SAS.Authenticated (AuthenticatedCli
   where
     sqlUserId = toSqlKey $ fromIntegral userId
 saveUserPersonalInfoEndpoint _ _ _ = do
-  Log.logError "saveUserPersonalInfoEndpoint: Unauthorized access"
+  Log.error "saveUserPersonalInfoEndpoint: Unauthorized access"
   liftIO $ throw err401

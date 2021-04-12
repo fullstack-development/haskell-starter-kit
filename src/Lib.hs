@@ -9,15 +9,15 @@ import AppName.Domain.PhoneVerification (UncheckedPhone (UncheckedPhone), checkP
 import AppName.Gateways.Database (withDbPoolDebug)
 import AppName.Gateways.Database.Tables.User (createUserRecord, loadUserById)
 import AppName.Server (runDevServer)
-import qualified Colog as Log
 import Control.Monad.IO.Unlift (MonadIO, liftIO)
 import Database.Persist.Postgresql
-import qualified Ext.Logger.Colog as Log
+import qualified Ext.Logger as Log
+import qualified Ext.Logger.Colog as CologAdapter
 import qualified Ext.Logger.Config as Log
 
 runDefaultExample :: IO ()
 runDefaultExample =
-  Log.usingLoggerT (Log.mkLogActionIO logConf) $ do
+  CologAdapter.runWithAction (CologAdapter.mkLogActionIO logConf) $ do
     config <- liftIO C.retrieveConfig
     runLogExample
     runDBExample config
@@ -25,9 +25,9 @@ runDefaultExample =
 
 runServer :: IO ()
 runServer =
-  Log.usingLoggerT (Log.mkLogActionIO logConf) $ do
+  CologAdapter.runWithAction (CologAdapter.mkLogActionIO logConf) $ do
     runLogExample
-    Log.logDebug "starting server"
+    Log.debug "starting server"
     liftIO runDevServer
 
 logConf :: Log.LoggerConfig
@@ -52,8 +52,7 @@ runDBExample config =
       liftIO $ print user
       pure ()
 
--- type WithLog env msg m = (MonadReader env m, HasLog env msg m)
-runLogExample :: Log.WithLog env Log.Message m => m ()
+runLogExample :: Log.WithLog m => m ()
 runLogExample = do
-  Log.logInfo "Starting application..."
-  Log.logDebug "Here is how we work!"
+  Log.info "Starting application..."
+  Log.debug "Here is how we work!"
