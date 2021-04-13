@@ -19,9 +19,9 @@ import qualified Data.Text as T
 import qualified GHC.Stack as GHC
 import Prelude hiding (error)
 
--- | Use the type instead of 'MonadLogger' to pass the logger monad
--- constraint. This is necessary to capture the caller function name
--- within the GHC call stack.
+-- | You should generally prefer using this type as a constraint
+-- instead of 'MonadLogger' to enable logging. This is necessary to
+-- capture the caller function name within the GHC call stack.
 type WithLog m = (GHC.HasCallStack, MonadLogger m)
 
 class Monad m => MonadLogger m where
