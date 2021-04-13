@@ -1,8 +1,8 @@
 module PhoneVerification where
 
 import AppName.API.PhoneVerification (PhoneAuthAPI)
-import AppName.Auth (AuthenticatedUser (AuthenticatedClient), defaultJWTSettings, retrieveKey)
-import AppName.Auth.Commands (checkAuthKey, createKey)
+import AppName.Auth (AuthenticatedUser (AuthenticatedClient), defaultJWTSettings)
+import AppName.Auth.Commands (checkAuthKey)
 import qualified AppName.Config as C
 import AppName.Domain.PhoneVerification (Code, Phone, codeToText, defParams, phoneToText)
 import qualified AppName.Gateways.CryptoRandomGen as CryptoRandomGen
@@ -15,7 +15,7 @@ import Control.Concurrent.STM
     readTVarIO,
     writeTVar,
   )
-import Control.Exception.Safe (MonadThrow, throw, try)
+import Control.Exception.Safe (try)
 import Control.Monad.Except (ExceptT (ExceptT))
 import Data.Aeson as J
 import qualified Data.Aeson.Types as J
@@ -27,22 +27,18 @@ import Data.Proxy
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.Encoding as TLE
-import Ext.Logger.Colog (logByteStringStdout, logTextStdout)
 import qualified Ext.Logger.Colog as Log
-import qualified Ext.Logger.Config as Log
 import Network.HTTP.Types (Header, methodPost)
 import Network.Wai
 import Network.Wai.Test (SResponse)
 import Servant (Handler (..), hoistServer, serve)
 import qualified Servant.Auth.Server as SAS
-import qualified System.Directory as FS
 import System.Environment (setEnv)
 import Test.Hspec.Wai
   ( MatchBody (..),
     ResponseMatcher (..),
     WaiSession,
     liftIO,
-    post,
     request,
     shouldRespondWith,
     with,
@@ -51,7 +47,6 @@ import Test.Tasty (defaultMain, testGroup)
 import Test.Tasty.Hspec
   ( Spec,
     after,
-    before,
     describe,
     it,
     shouldNotBe,
@@ -87,14 +82,7 @@ mkApp onSendCode (MockUser userId) = do
   authKeyPath <- C.getKeysFilePath config
   authKey <- SAS.readKey authKeyPath
   randomGen <- CryptoRandomGen.newRef
-  let logConf :: Log.LoggerConfig
-      logConf =
-        Log.LoggerConfig
-          { appInstanceName = "AppName",
-            logToStdout = True,
-            logLevel = Log.Debug
-          }
-      mockExternals =
+  let mockExternals =
         Externals
           { eJwtSettings = defaultJWTSettings authKey,
             eRetrieveUserByPhone = \_ -> pure $ AuthenticatedClient userId,
