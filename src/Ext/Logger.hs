@@ -3,6 +3,9 @@
 -- The application logger interface module. This should be minimal
 -- possible and independent of a particular logging library or
 -- implementation.
+--
+-- The module is intended to be imported qualified with an alias like
+-- @Log@.
 module Ext.Logger
   ( WithLog,
     MonadLogger (..),
@@ -32,10 +35,12 @@ data Severity = Debug | Info | Warning | Error
 
 newtype CallStack = CallStack {unCallStack :: GHC.CallStack}
 
+-- Yoy may use them as `Log.info`, `Log.error` etc. if you imported
+-- the module qualified with the corresponding alias.
 debug, info, warn, error :: (GHC.HasCallStack, MonadLogger m) => T.Text -> m ()
 debug = GHC.withFrozenCallStack $ logCapturingCallStack Debug
 info = GHC.withFrozenCallStack $ logCapturingCallStack Info
-warn = GHC.withFrozenCallStack $logCapturingCallStack Warning
+warn = GHC.withFrozenCallStack $ logCapturingCallStack Warning
 error = GHC.withFrozenCallStack $ logCapturingCallStack Error
 
 logCapturingCallStack :: (GHC.HasCallStack, MonadLogger m) => Severity -> T.Text -> m ()
