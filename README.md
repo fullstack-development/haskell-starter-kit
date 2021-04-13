@@ -14,6 +14,11 @@ To configure env for project:
 
 `cp ./.env.template ./.env`
 
+3. Configure liquibase at `migrations/liquibase.properties` using template at
+   `migrations/liquibase.template.properties`:
+
+`cp migrations/liquibase.template.properties migrations/liquibase.properties`
+
 ## Run with docker
 
 You need to have docker installed in your system. Then run:
@@ -22,6 +27,9 @@ You need to have docker installed in your system. Then run:
 make deps
 make run
 ```
+
+`make run` is needed every time you'd like to build and run the project in a
+docker container. `make deps` is only rarely needed when `make run` fails.
 
 ## Develop with stack
 
@@ -37,7 +45,7 @@ To build project:
 
 `stack build`
 
-To run migration:
+To run migration, ensure you have run `make run` and run the command:
 
 `./migration/run.sh`
 
