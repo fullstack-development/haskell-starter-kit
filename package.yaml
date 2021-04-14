@@ -38,6 +38,7 @@ dependencies:
 - basement
 
 - configurator
+- dhall
 - resourcet
 - resource-pool
 
