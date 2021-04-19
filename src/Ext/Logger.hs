@@ -35,8 +35,6 @@ data Severity = Debug | Info | Warning | Error
 
 newtype CallStack = CallStack {unCallStack :: GHC.CallStack}
 
--- Yoy may use them as `Log.info`, `Log.error` etc. if you imported
--- the module qualified with the corresponding alias.
 logDebug, logInfo, logWarn, logError :: (GHC.HasCallStack, MonadLogger m) => T.Text -> m ()
 logDebug = GHC.withFrozenCallStack $ logCapturingCallStack Debug
 logInfo = GHC.withFrozenCallStack $ logCapturingCallStack Info
