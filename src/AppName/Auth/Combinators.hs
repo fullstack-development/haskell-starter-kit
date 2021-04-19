@@ -34,7 +34,7 @@ withAdmin handlerName user _ =
 
 logUnexpectedActor :: (Log.WithLog m, Show a) => T.Text -> a -> T.Text -> m ()
 logUnexpectedActor expected actual source =
-  Log.error $
+  Log.logError $
     "Expected " <> expected <> " role, but got " <> tshow actual
       <> " while invoking handler "
       <> source

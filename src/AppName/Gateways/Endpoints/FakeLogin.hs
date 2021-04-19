@@ -61,5 +61,5 @@ fakeLoginEndpoint jwtSettings (LoginData userId "Open Sesame") = do
         Nothing
   either (pure . LoginResponseError) (pure . LoginResponseSuccess) token
 fakeLoginEndpoint _ _ = do
-  Log.error "fakeLoginEndpoint: Unauthorized access"
+  Log.logError "fakeLoginEndpoint: Unauthorized access"
   liftIO $ throw err401

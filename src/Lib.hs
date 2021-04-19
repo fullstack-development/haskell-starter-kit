@@ -27,7 +27,7 @@ runServer :: IO ()
 runServer =
   CologAdapter.runWithAction (CologAdapter.mkLogActionIO logConf) $ do
     runLogExample
-    Log.debug "starting server"
+    Log.logDebug "starting server"
     liftIO runDevServer
 
 logConf :: Log.LoggerConfig
@@ -54,5 +54,5 @@ runDBExample config =
 
 runLogExample :: Log.WithLog m => m ()
 runLogExample = do
-  Log.info "Starting application..."
-  Log.debug "Here is how we work!"
+  Log.logInfo "Starting application..."
+  Log.logDebug "Here is how we work!"

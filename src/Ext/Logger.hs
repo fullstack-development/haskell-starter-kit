@@ -11,10 +11,10 @@ module Ext.Logger
     MonadLogger (..),
     Severity (..),
     CallStack (..),
-    debug,
-    info,
-    warn,
-    error,
+    logDebug,
+    logInfo,
+    logWarn,
+    logError,
   )
 where
 
@@ -37,11 +37,11 @@ newtype CallStack = CallStack {unCallStack :: GHC.CallStack}
 
 -- Yoy may use them as `Log.info`, `Log.error` etc. if you imported
 -- the module qualified with the corresponding alias.
-debug, info, warn, error :: (GHC.HasCallStack, MonadLogger m) => T.Text -> m ()
-debug = GHC.withFrozenCallStack $ logCapturingCallStack Debug
-info = GHC.withFrozenCallStack $ logCapturingCallStack Info
-warn = GHC.withFrozenCallStack $ logCapturingCallStack Warning
-error = GHC.withFrozenCallStack $ logCapturingCallStack Error
+logDebug, logInfo, logWarn, logError :: (GHC.HasCallStack, MonadLogger m) => T.Text -> m ()
+logDebug = GHC.withFrozenCallStack $ logCapturingCallStack Debug
+logInfo = GHC.withFrozenCallStack $ logCapturingCallStack Info
+logWarn = GHC.withFrozenCallStack $ logCapturingCallStack Warning
+logError = GHC.withFrozenCallStack $ logCapturingCallStack Error
 
 logCapturingCallStack :: (GHC.HasCallStack, MonadLogger m) => Severity -> T.Text -> m ()
 logCapturingCallStack severity = GHC.withFrozenCallStack (logMessage severity $ CallStack GHC.callStack)

@@ -26,5 +26,5 @@ saveUserPersonalInfoEndpoint AppHandle {..} (SAS.Authenticated (AuthenticatedCli
   where
     sqlUserId = toSqlKey $ fromIntegral userId
 saveUserPersonalInfoEndpoint _ _ _ = do
-  Log.error "saveUserPersonalInfoEndpoint: Unauthorized access"
+  Log.logError "saveUserPersonalInfoEndpoint: Unauthorized access"
   liftIO $ throw err401

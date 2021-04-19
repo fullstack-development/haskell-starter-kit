@@ -84,5 +84,5 @@ getCurrentUserEndpoint AppHandle {..} (SAS.Authenticated (AuthenticatedClient us
                     }
             }
 getCurrentUserEndpoint _ _ = do
-  Log.error "getCurrentUserEndpoint: Unauthorized access"
+  Log.logError "getCurrentUserEndpoint: Unauthorized access"
   liftIO $ throw err401
