@@ -18,7 +18,7 @@ import Control.Monad.Logger (NoLoggingT)
 import Data.Pool (Pool)
 import Database.Persist.Sql (SqlBackend)
 import qualified Ext.Logger.Colog as Log
-import Ext.Logger.Config (LoggerConfig)
+import Ext.Logger.Config (LoggerConfig, fromAppConfig)
 
 data AppHandle = AppHandle
   { appHandleDbPool :: Pool SqlBackend,
@@ -32,7 +32,8 @@ type MonadHandler m = (MonadIO m, Log.WithLog (Log.LogAction m Log.Message) Log.
 withAppHandle :: (AppHandle -> NoLoggingT IO b) -> IO b
 withAppHandle action = do
   config <- C.retrieveConfig
-  loggerConfig <- C.getLoggerConfig config
+  appConfig <- C.loadConfig "./config/dev.dhall"
+  let loggerConfig = fromAppConfig $ C.logConfig appConfig
   randomGen <- CryptoRandomGen.newRef
   liftIO . withDbPool config $ \pool ->
     action $ AppHandle pool config loggerConfig randomGen

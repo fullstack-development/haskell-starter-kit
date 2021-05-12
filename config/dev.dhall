@@ -26,5 +26,6 @@ in
 {
   dbConfig = dbConfig,
   logConfig = logConfig,
-  authConfig = authConfig
+  authConfig = authConfig,
+  appPort = +8080
 }

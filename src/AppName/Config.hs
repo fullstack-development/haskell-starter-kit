@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE OverloadedLabels #-}
 
 module AppName.Config
   ( Config,
@@ -8,8 +9,12 @@ module AppName.Config
     getKeysFilePath,
     getPort,
     getPoolLimit,
-    getLoggerConfig,
     AppConfig (..),
+    DbConfig (..),
+    AuthConfig (..),
+    LogLevel (..),
+    LogToFile (..),
+    LogConfig (..),
     loadConfig,
   )
 where
@@ -17,13 +22,9 @@ where
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import qualified Data.Configurator as C
 import qualified Data.Configurator.Types as C
-import Data.Maybe (fromMaybe)
 import Data.Text (Text)
 import qualified Dhall
-import qualified Ext.Logger.Colog as Log (Severity (Debug))
-import qualified Ext.Logger.Config as Log (LoggerConfig (..))
 import GHC.Generics (Generic)
-import Text.Read (readMaybe)
 
 data DbConfig = DbConfig
   { host :: Text,
@@ -35,13 +36,13 @@ data DbConfig = DbConfig
   }
   deriving (Generic, Dhall.FromDhall, Show)
 
-data LogLevel = Debug | Info | Warning | Error
-  deriving (Generic, Dhall.FromDhall, Show)
-
 newtype AuthConfig = AuthConfig {pathToKey :: Text}
   deriving (Generic, Dhall.FromDhall, Show)
 
-data LogToFile = NoLogToFile | AllowLogToFile Text 
+data LogLevel = Debug | Info | Warning | Error
+  deriving (Generic, Dhall.FromDhall, Show)
+
+data LogToFile = NoLogToFile | AllowLogToFile Text
   deriving (Generic, Dhall.FromDhall, Show)
 
 data LogConfig = LogConfig
@@ -56,14 +57,13 @@ data LogConfig = LogConfig
 data AppConfig = AppConfig
   { authConfig :: AuthConfig,
     logConfig :: LogConfig,
-    dbConfig :: DbConfig
+    dbConfig :: DbConfig,
+    appPort :: Int
   }
   deriving (Generic, Dhall.FromDhall, Show)
 
--- TODO load path to config file from ENV VAR
--- TODO use default dev config if it was not provided. Warn about using default config.
-loadConfig :: MonadIO m => m AppConfig
-loadConfig = liftIO $ Dhall.inputFile Dhall.auto "./config/dev.dhall"
+loadConfig :: MonadIO m => FilePath -> m AppConfig
+loadConfig = liftIO . Dhall.inputFile Dhall.auto
 
 type Config = C.Config
 
@@ -80,15 +80,3 @@ getPort config = liftIO $ C.require config "web_server.port"
 
 getPoolLimit :: MonadIO m => C.Config -> m Int
 getPoolLimit config = liftIO $ C.require config "database.pool_limit"
-
-getLoggerConfig :: MonadIO m => C.Config -> m Log.LoggerConfig
-getLoggerConfig config = liftIO $ do
-  appInstanceName <- C.require config "log.app_instance_name"
-  logToStdout <- C.require config "log.log_to_stdout"
-  logLevelRaw <- C.require config "log.log_level"
-  pure $
-    Log.LoggerConfig
-      { appInstanceName = appInstanceName,
-        logToStdout = logToStdout,
-        logLevel = fromMaybe Log.Debug (readMaybe logLevelRaw)
-      }
