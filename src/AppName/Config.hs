@@ -14,7 +14,7 @@ import Control.Monad.IO.Class (MonadIO, liftIO)
 import qualified Data.Configurator as C
 import qualified Data.Configurator.Types as C
 import Data.Maybe (fromMaybe)
-import Ext.Logger.Colog (Severity (Debug))
+import qualified Ext.Logger as Log
 import Ext.Logger.Config (LoggerConfig (..))
 import Text.Read (readMaybe)
 
@@ -43,5 +43,5 @@ getLoggerConfig config = liftIO $ do
     LoggerConfig
       { appInstanceName = appInstanceName,
         logToStdout = logToStdout,
-        logLevel = fromMaybe Debug (readMaybe logLevelRaw)
+        logLevel = fromMaybe Log.Debug (readMaybe logLevelRaw)
       }

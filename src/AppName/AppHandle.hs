@@ -17,7 +17,7 @@ import Control.Monad.IO.Unlift (MonadIO)
 import Control.Monad.Logger (NoLoggingT)
 import Data.Pool (Pool)
 import Database.Persist.Sql (SqlBackend)
-import qualified Ext.Logger.Colog as Log
+import qualified Ext.Logger as Log
 import Ext.Logger.Config (LoggerConfig)
 
 data AppHandle = AppHandle
@@ -27,7 +27,7 @@ data AppHandle = AppHandle
     appHandleRandomGen :: CryptoRandomGen.Ref
   }
 
-type MonadHandler m = (MonadIO m, Log.WithLog (Log.LogAction m Log.Message) Log.Message m)
+type MonadHandler m = (MonadIO m, Log.WithLog m)
 
 withAppHandle :: (AppHandle -> NoLoggingT IO b) -> IO b
 withAppHandle action = do

@@ -21,7 +21,7 @@ import AppName.Gateways.Database
 import Control.Exception.Safe (throw)
 import Control.Monad.IO.Unlift (MonadIO (liftIO))
 import Database.Persist.Postgresql
-import qualified Ext.Logger.Colog as Log
+import qualified Ext.Logger as Log
 import Servant (err401)
 import qualified Servant.Auth.Server as SAS
 

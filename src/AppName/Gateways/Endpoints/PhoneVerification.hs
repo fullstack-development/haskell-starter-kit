@@ -26,7 +26,7 @@ import Data.Foldable (traverse_)
 import Data.Proxy (Proxy (..))
 import Data.Time (getCurrentTime)
 import Ext.Data.Text (tshow)
-import qualified Ext.Logger.Colog as Log
+import qualified Ext.Logger as Log
 import Servant (ServerT, err500, (:<|>) (..))
 import qualified Servant.Auth.Server as SAS
 
