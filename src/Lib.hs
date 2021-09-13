@@ -13,12 +13,11 @@ import Control.Monad.IO.Unlift (MonadIO, liftIO)
 import Database.Persist.Postgresql
 import qualified Ext.Logger as Log
 import qualified Ext.Logger.Colog as CologAdapter
-import qualified Ext.Logger.Config as Log
 
 runDefaultExample :: IO ()
 runDefaultExample =
   CologAdapter.runWithAction (CologAdapter.mkLogActionIO logConf) $ do
-    config <- liftIO C.retrieveConfig
+    config <- liftIO $ C.loadConfig "./config/dev.dhall"
     runLogExample
     runDBExample config
     liftIO runDevServer
@@ -33,12 +32,14 @@ runServer =
 logConf :: Log.LoggerConfig
 logConf =
   Log.LoggerConfig
-    { appInstanceName = "AppName",
+    { appName = "AppName",
       logToStdout = True,
-      logLevel = Log.Debug
+      logLevel = Log.Debug,
+      logRawSql = False,
+      logToFile = Log.NoLogToFile
     }
 
-runDBExample :: MonadIO m => C.Config -> m ()
+runDBExample :: MonadIO m => C.AppConfig -> m ()
 runDBExample config =
   liftIO
     . withDbPoolDebug config

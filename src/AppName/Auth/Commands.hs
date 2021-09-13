@@ -3,6 +3,7 @@ module AppName.Auth.Commands where
 import qualified AppName.Config as C
 import Servant.Auth.Server (writeKey)
 import qualified System.Directory as FS
+import Data.Text (unpack)
 
 createKey :: FilePath -> IO ()
 createKey filePath = do
@@ -11,8 +12,8 @@ createKey filePath = do
 
 checkAuthKey :: IO ()
 checkAuthKey = do
-  config <- C.retrieveConfig
-  authKeyPath <- C.getKeysFilePath config
+  config <- C.loadConfig "./config/dev.dhall"
+  let authKeyPath = unpack $ C.pathToKey $ C.authConfig config
   isExist <- FS.doesFileExist authKeyPath
   if isExist then notifyExists authKeyPath else createKey authKeyPath
   where

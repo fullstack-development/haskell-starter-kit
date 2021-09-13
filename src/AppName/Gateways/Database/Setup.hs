@@ -22,21 +22,21 @@ import Data.Pool (Pool, destroyAllResources)
 import Database.Persist.Postgresql (SqlBackend, createPostgresqlPoolModified)
 import Database.PostgreSQL.Simple (execute_)
 
-withDbPoolDebug :: C.Config -> (Pool SqlBackend -> LoggingT IO a) -> IO a
+withDbPoolDebug :: C.AppConfig -> (Pool SqlBackend -> LoggingT IO a) -> IO a
 withDbPoolDebug = withLoggedDbPool runStdoutLoggingT
 
-withDbPool :: C.Config -> (Pool SqlBackend -> NoLoggingT IO a) -> IO a
+withDbPool :: C.AppConfig -> (Pool SqlBackend -> NoLoggingT IO a) -> IO a
 withDbPool = withLoggedDbPool runNoLoggingT
 
 withLoggedDbPool ::
   (MonadUnliftIO m, MonadLogger m, MonadMask m) =>
   (m a -> IO a) ->
-  C.Config ->
+  C.AppConfig ->
   (Pool SqlBackend -> m a) ->
   IO a
 withLoggedDbPool runLogging config action = do
-  poolLimit <- C.getPoolLimit config
-  connStr <- createPgConnString config
+  let poolLimit = C.poolLimit $ C.dbConfig config
+  let connStr = createPgConnString config
   liftIO $
     runLogging $
       bracket

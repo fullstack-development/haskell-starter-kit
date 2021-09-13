@@ -78,8 +78,8 @@ newtype MockUser
 
 mkApp :: (Phone -> Code -> IO ()) -> MockUser -> IO Application
 mkApp onSendCode (MockUser userId) = do
-  config <- C.retrieveConfig
-  authKeyPath <- C.getKeysFilePath config
+  config <- C.loadConfig "./config/dev.dhall"
+  let authKeyPath = T.unpack $ C.pathToKey $ C.authConfig config
   authKey <- SAS.readKey authKeyPath
   randomGen <- CryptoRandomGen.newRef
   let mockExternals =

@@ -1,19 +1,19 @@
-let LogLevel = <Debug | Info | Warning | Error>
+let LogSeverity = <Debug | Info | Warning | Error>
 let LogToFile = <NoLogToFile | AllowLogToFile : Text>
 
 let dbConfig = {
   host = "localhost", 
   port = +5431, 
-  database = "placid_db", 
-  user = "placid_user", 
-  password = "placid_pass", 
+  database = "haskell_starter-kit-db", 
+  user = "haskell_starter-kit-user", 
+  password = "haskell_starter-kit-pass", 
   poolLimit = +10
 }
 
-let logConfig = {
-  appName = "AppName", 
+let loggerConfig = {
+  appName = "Haskell Starter Kit", 
   logToStdout = True, 
-  logLevel = LogLevel.Debug, 
+  logLevel = LogSeverity.Debug, 
   logRawSql = True, 
   logToFile = LogToFile.AllowLogToFile "/tmp/haskell-starter-kit.log"
 }
@@ -25,7 +25,7 @@ let authConfig = {
 in
 {
   dbConfig = dbConfig,
-  logConfig = logConfig,
+  loggerConfig = loggerConfig,
   authConfig = authConfig,
   appPort = +8080
 }

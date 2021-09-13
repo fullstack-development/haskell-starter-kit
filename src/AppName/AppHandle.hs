@@ -22,7 +22,7 @@ import Ext.Logger.Config (LoggerConfig)
 
 data AppHandle = AppHandle
   { appHandleDbPool :: Pool SqlBackend,
-    appHandleConfig :: C.Config,
+    appHandleAppConfig :: C.AppConfig,
     appHandleLogger :: LoggerConfig,
     appHandleRandomGen :: CryptoRandomGen.Ref
   }
@@ -31,9 +31,14 @@ type MonadHandler m = (MonadIO m, Log.WithLog m)
 
 withAppHandle :: (AppHandle -> NoLoggingT IO b) -> IO b
 withAppHandle action = do
-  config <- C.retrieveConfig
   appConfig <- C.loadConfig "./config/dev.dhall"
-  let loggerConfig = fromAppConfig $ C.logConfig appConfig
+  let loggerConfig = C.loggerConfig appConfig
   randomGen <- CryptoRandomGen.newRef
-  liftIO . withDbPool config $ \pool ->
-    action $ AppHandle pool config loggerConfig randomGen
+  liftIO . withDbPool appConfig $ \pool ->
+    action $
+      AppHandle
+        { appHandleDbPool = pool,
+          appHandleAppConfig = appConfig,
+          appHandleLogger = loggerConfig,
+          appHandleRandomGen = randomGen
+        }

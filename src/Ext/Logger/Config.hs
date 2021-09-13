@@ -1,33 +1,30 @@
+{-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE OverloadedLabels #-}
 
-module Ext.Logger.Config
-  ( LoggerConfig (..),
-    fromAppConfig,
-  )
-where
+module Ext.Logger.Config where
 
-import qualified AppName.Config as C
-import qualified Colog as Log
-import qualified Data.Text as T
-import qualified Ext.Logger as Log
+import qualified Colog
+import Data.Text (Text)
+import qualified Dhall
+import GHC.Generics (Generic)
+
+data Severity = Debug | Info | Warning | Error
+  deriving (Eq, Show, Read, Generic, Dhall.FromDhall)
+
+data LogToFile = NoLogToFile | AllowLogToFile Text
+  deriving (Generic, Dhall.FromDhall, Show)
 
 data LoggerConfig = LoggerConfig
-  { appInstanceName :: T.Text,
+  { appName :: Text,
     logToStdout :: Bool,
-    logLevel :: Log.Severity
+    logLevel :: Severity,
+    logRawSql :: Bool,
+    logToFile :: LogToFile
   }
-  deriving (Show, Eq)
+  deriving (Generic, Dhall.FromDhall, Show)
 
-transformLogLevel :: C.LogLevel -> Log.Severity
-transformLogLevel C.Debug = Log.Debug
-transformLogLevel C.Info = Log.Info
-transformLogLevel C.Warning = Log.Warning
-transformLogLevel C.Error = Log.Error
-
-fromAppConfig :: C.LogConfig -> LoggerConfig
-fromAppConfig C.LogConfig {..} =
-  LoggerConfig
-    { appInstanceName = appName,
-      logToStdout = logToStdout,
-      logLevel = transformLogLevel logLevel
-    }
+transformLogLevel :: Severity -> Colog.Severity
+transformLogLevel Debug = Colog.Debug
+transformLogLevel Info = Colog.Info
+transformLogLevel Warning = Colog.Warning
+transformLogLevel Error = Colog.Error
