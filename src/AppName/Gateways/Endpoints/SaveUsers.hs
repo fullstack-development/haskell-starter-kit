@@ -14,7 +14,7 @@ import Control.Monad.IO.Unlift (MonadIO (liftIO))
 import Data.Functor (($>))
 import Database.Persist.Postgresql (runSqlPersistMPool, toSqlKey)
 import qualified Ext.HTTP.Response as Web
-import qualified Ext.Logger.Colog as Log
+import qualified Ext.Logger as Log
 import Servant (err401)
 import qualified Servant.Auth.Server as SAS
 

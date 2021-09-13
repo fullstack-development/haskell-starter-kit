@@ -27,7 +27,7 @@ import Data.Proxy
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.Encoding as TLE
-import qualified Ext.Logger.Colog as Log
+import qualified Ext.Logger.Colog as CologAdapter
 import Network.HTTP.Types (Header, methodPost)
 import Network.Wai
 import Network.Wai.Test (SResponse)
@@ -92,8 +92,8 @@ mkApp onSendCode (MockUser userId) = do
   impl <- phoneVerificationAPI defParams mockExternals
   pure $ serve api $ hoistServer api hoistTestServer impl
 
-hoistTestServer :: Log.LoggerT Log.Message IO x -> Handler x
-hoistTestServer = Handler . ExceptT . try . Log.usingLoggerT mempty
+hoistTestServer :: CologAdapter.LoggerT IO x -> Handler x
+hoistTestServer = Handler . ExceptT . try . CologAdapter.runWithAction mempty
 
 jsonHeaders :: [Header]
 jsonHeaders = [("Content-Type", "application/json")]

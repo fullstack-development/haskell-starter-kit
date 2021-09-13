@@ -9,6 +9,7 @@ where
 import qualified AppName.Config as C
 import qualified Colog as Log
 import qualified Data.Text as T
+import qualified Ext.Logger as Log
 
 data LoggerConfig = LoggerConfig
   { appInstanceName :: T.Text,

@@ -20,11 +20,12 @@ import AppName.Gateways.Endpoints.GetUsers
   )
 import qualified AppName.Gateways.Endpoints.PhoneVerification as Phone
 import AppName.Gateways.Endpoints.SaveUsers (saveUserPersonalInfoEndpoint)
+import qualified Colog
 import Control.Exception.Safe (try)
 import Control.Monad.Except (ExceptT (ExceptT))
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Data.Proxy (Proxy (Proxy))
-import qualified Ext.Logger.Colog as Log
+import qualified Ext.Logger.Colog as CologAdapter
 import Network.Wai.Handler.Warp
   ( Settings,
     defaultSettings,
@@ -72,12 +73,12 @@ buildHandlers jwtSettings h = do
           }
     codePrinter _phone code = print $ "code sent: " <> Phone.codeToText code
 
-hoistServerHandler :: Log.LogAction IO Log.Message -> ServerT API (Log.LoggerT Log.Message IO) -> Server API
+hoistServerHandler :: Colog.LogAction IO Colog.Message -> ServerT API (CologAdapter.LoggerT IO) -> Server API
 hoistServerHandler env =
   hoistServerWithContext
     apiType
     (Proxy :: ProtectedServantJWTCtx)
-    (Handler . ExceptT . try . Log.usingLoggerT env)
+    (Handler . ExceptT . try . CologAdapter.runWithAction env)
 
 runServer :: C.Config -> IO ()
 runServer config = do
@@ -101,7 +102,7 @@ runServer config = do
           . cors (const $ Just policy)
           . provideOptions apiType
           . serveWithContext apiType cfg
-          . hoistServerHandler (Log.mkLogActionIO (appHandleLogger ah))
+          . hoistServerHandler (CologAdapter.mkLogActionIO (appHandleLogger ah))
           $ handler
   liftIO $ withAppHandle $ server serverSettings
 

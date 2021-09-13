@@ -16,7 +16,7 @@ import Data.Aeson ((.=))
 import qualified Data.Aeson as J
 import qualified Data.ByteString.Lazy as BL
 import qualified Ext.Data.Aeson as J
-import qualified Ext.Logger.Colog as Log
+import qualified Ext.Logger as Log
 import GHC.Generics (Generic)
 import Servant (err401)
 import qualified Servant.Auth.Server as SAS

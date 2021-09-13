@@ -25,6 +25,10 @@ import qualified Data.Configurator.Types as C
 import Data.Text (Text)
 import qualified Dhall
 import GHC.Generics (Generic)
+import Data.Maybe (fromMaybe)
+import qualified Ext.Logger as Log
+import Ext.Logger.Config (LoggerConfig (..))
+import Text.Read (readMaybe)
 
 data DbConfig = DbConfig
   { host :: Text,
@@ -80,3 +84,15 @@ getPort config = liftIO $ C.require config "web_server.port"
 
 getPoolLimit :: MonadIO m => C.Config -> m Int
 getPoolLimit config = liftIO $ C.require config "database.pool_limit"
+
+getLoggerConfig :: MonadIO m => C.Config -> m LoggerConfig
+getLoggerConfig config = liftIO $ do
+  appInstanceName <- C.require config "log.app_instance_name"
+  logToStdout <- C.require config "log.log_to_stdout"
+  logLevelRaw <- C.require config "log.log_level"
+  pure $
+    LoggerConfig
+      { appInstanceName = appInstanceName,
+        logToStdout = logToStdout,
+        logLevel = fromMaybe Log.Debug (readMaybe logLevelRaw)
+      }
