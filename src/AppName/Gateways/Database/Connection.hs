@@ -3,17 +3,13 @@ module AppName.Gateways.Database.Connection
   )
 where
 
-import AppName.Config (Config)
-import qualified Data.Configurator as C
+import qualified AppName.Config as Config
+import Data.Text (pack)
+import Data.Text.Encoding (encodeUtf8)
 import Database.Persist.Postgresql (ConnectionString)
 
-createPgConnString :: Config -> IO ConnectionString
+createPgConnString :: Config.AppConfig -> ConnectionString
 createPgConnString config = do
-  host <- C.require config "database.host"
-  name <- C.require config "database.name"
-  user <- C.require config "database.user"
-  pass <- C.require config "database.pass"
-  port <- C.require config "database.port"
-  let proto = "postgresql://"
-  pure $
-    proto <> user <> ":" <> pass <> "@" <> host <> ":" <> port <> "/" <> name
+  let Config.DbConfig {..} = Config.dbConfig config
+   in encodeUtf8 $
+        "postgresql://" <> user <> ":" <> password <> "@" <> host <> ":" <> pack (show port) <> "/" <> database

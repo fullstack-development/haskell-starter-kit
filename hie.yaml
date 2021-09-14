@@ -1,0 +1,13 @@
+cradle:
+  stack:
+    - path: "./src"
+      component: "haskell-starter-kit:lib"
+
+    - path: "./app/Main.hs"
+      component: "haskell-starter-kit:exe:haskell-starter-kit-exe"
+
+    - path: "./app/Paths_haskell_starter_kit.hs"
+      component: "haskell-starter-kit:exe:haskell-starter-kit-exe"
+
+    - path: "./test"
+      component: "haskell-starter-kit:test:haskell-starter-kit-test"

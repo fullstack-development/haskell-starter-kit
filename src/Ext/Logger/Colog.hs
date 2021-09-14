@@ -24,7 +24,7 @@ import qualified Data.Text as T
 import qualified Data.Time as Time
 import qualified Data.TypeRepMap as TM
 import qualified Ext.Data.Time as Clock
-import qualified Ext.Logger as Log
+import qualified Ext.Logger as Logger
 import qualified Ext.Logger.Config as Conf
 import System.IO
   ( BufferMode (LineBuffering),
@@ -36,28 +36,28 @@ import System.IO
 newtype LoggerT m a = LoggerT {runLoggerT :: Colog.LoggerT Colog.Message m a}
   deriving (Functor, Applicative, Monad)
 
-instance MonadIO m => Log.MonadLogger (LoggerT m) where
+instance MonadIO m => Logger.MonadLogger (LoggerT m) where
   logMessage = cologLogMessage
 
 instance MonadIO m => MonadIO (LoggerT m) where
   liftIO = LoggerT . liftIO
 
-cologLogMessage :: MonadIO m => Log.Severity -> Log.CallStack -> T.Text -> LoggerT m ()
+cologLogMessage :: MonadIO m => Logger.Severity -> Logger.CallStack -> T.Text -> LoggerT m ()
 cologLogMessage severity callSite messageText = LoggerT $ Colog.logMsg cologMsg
   where
     cologMsg =
       Colog.Msg
         { msgSeverity = cologSeverityFromSeverity severity,
           msgText = messageText,
-          msgStack = Log.unCallStack callSite
+          msgStack = Logger.unCallStack callSite
         }
 
-cologSeverityFromSeverity :: Log.Severity -> Colog.Severity
+cologSeverityFromSeverity :: Logger.Severity -> Colog.Severity
 cologSeverityFromSeverity = \case
-  Log.Debug -> Colog.Debug
-  Log.Info -> Colog.Info
-  Log.Warning -> Colog.Warning
-  Log.Error -> Colog.Error
+  Logger.Debug -> Colog.Debug
+  Logger.Info -> Colog.Info
+  Logger.Warning -> Colog.Warning
+  Logger.Error -> Colog.Error
 
 runWithAction :: Monad m => Colog.LogAction m Colog.Message -> LoggerT m a -> m a
 runWithAction action = Colog.usingLoggerT action . runLoggerT
@@ -76,7 +76,7 @@ timestampedFieldMapIO ::
 timestampedFieldMapIO = [#timestamp Clock.now]
 
 fieldMap :: Monad m => Conf.LoggerConfig -> Colog.FieldMap m
-fieldMap Conf.LoggerConfig {..} = [#appInstanceName (pure appInstanceName)]
+fieldMap Conf.LoggerConfig {..} = [#appInstanceName (pure appName)]
 
 fmtRichMessage :: Monad m => Colog.RichMsg m Colog.Message -> m BS.ByteString
 fmtRichMessage Colog.RichMsg {richMsgMsg = Colog.Msg {..}, ..} = do

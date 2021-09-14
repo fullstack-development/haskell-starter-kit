@@ -25,6 +25,7 @@ import Control.Exception.Safe (try)
 import Control.Monad.Except (ExceptT (ExceptT))
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Data.Proxy (Proxy (Proxy))
+import Data.Text (unpack)
 import qualified Ext.Logger.Colog as CologAdapter
 import Network.Wai.Handler.Warp
   ( Settings,
@@ -80,12 +81,12 @@ hoistServerHandler env =
     (Proxy :: ProtectedServantJWTCtx)
     (Handler . ExceptT . try . CologAdapter.runWithAction env)
 
-runServer :: C.Config -> IO ()
+runServer :: C.AppConfig -> IO ()
 runServer config = do
   checkAuthKey
-  filePath <- C.getKeysFilePath config
+  let filePath = unpack $ C.pathToKey $ C.authConfig config
   authKey <- SAS.readKey filePath
-  port <- C.getPort config
+  let port = C.appPort config
   let serverSettings =
         setPort port $
           setBeforeMainLoop
@@ -108,5 +109,5 @@ runServer config = do
 
 runDevServer :: IO ()
 runDevServer = do
-  config <- C.retrieveConfig
+  config <- C.loadConfig "./config/dev.dhall"
   runServer config

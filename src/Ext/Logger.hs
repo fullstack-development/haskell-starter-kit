@@ -1,4 +1,5 @@
 {-# LANGUAGE ConstraintKinds #-}
+{-# LANGUAGE DeriveAnyClass #-}
 
 -- The application logger interface module. This should be minimal
 -- possible and independent of a particular logging library or
@@ -7,7 +8,8 @@
 -- The module is intended to be imported qualified with an alias like
 -- @Log@.
 module Ext.Logger
-  ( WithLog,
+  ( module Exports,
+    WithLog,
     MonadLogger (..),
     Severity (..),
     CallStack (..),
@@ -19,6 +21,7 @@ module Ext.Logger
 where
 
 import qualified Data.Text as T
+import Ext.Logger.Config as Exports
 import qualified GHC.Stack as GHC
 import Prelude hiding (error)
 
@@ -29,9 +32,6 @@ type WithLog m = (GHC.HasCallStack, MonadLogger m)
 
 class Monad m => MonadLogger m where
   logMessage :: Severity -> CallStack -> T.Text -> m ()
-
-data Severity = Debug | Info | Warning | Error
-  deriving (Eq, Show, Read)
 
 newtype CallStack = CallStack {unCallStack :: GHC.CallStack}
 

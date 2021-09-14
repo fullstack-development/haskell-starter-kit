@@ -1,47 +1,34 @@
-module AppName.Config
-  ( Config,
-    C.require,
-    C.lookup,
-    retrieveConfig,
-    getKeysFilePath,
-    getPort,
-    getPoolLimit,
-    getLoggerConfig,
-  )
-where
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE OverloadedLabels #-}
+
+module AppName.Config where
 
 import Control.Monad.IO.Class (MonadIO, liftIO)
-import qualified Data.Configurator as C
-import qualified Data.Configurator.Types as C
-import Data.Maybe (fromMaybe)
-import qualified Ext.Logger as Log
+import Data.Text (Text)
+import qualified Dhall
 import Ext.Logger.Config (LoggerConfig (..))
-import Text.Read (readMaybe)
+import GHC.Generics (Generic)
 
-type Config = C.Config
+data AppConfig = AppConfig
+  { authConfig :: AuthConfig,
+    loggerConfig :: LoggerConfig,
+    dbConfig :: DbConfig,
+    appPort :: Int
+  }
+  deriving (Generic, Dhall.FromDhall, Show)
 
-retrieveConfig :: MonadIO m => m C.Config
-retrieveConfig = do
-  let configPath = "./config/local.conf"
-  liftIO $ C.load [C.Required configPath]
+data DbConfig = DbConfig
+  { host :: Text,
+    port :: Int,
+    database :: Text,
+    user :: Text,
+    password :: Text,
+    poolLimit :: Int
+  }
+  deriving (Generic, Dhall.FromDhall, Show)
 
-getKeysFilePath :: MonadIO m => C.Config -> m FilePath
-getKeysFilePath config = liftIO $ C.require config "auth.key_path"
+newtype AuthConfig = AuthConfig {pathToKey :: Text}
+  deriving (Generic, Dhall.FromDhall, Show)
 
-getPort :: MonadIO m => C.Config -> m Int
-getPort config = liftIO $ C.require config "web_server.port"
-
-getPoolLimit :: MonadIO m => C.Config -> m Int
-getPoolLimit config = liftIO $ C.require config "database.pool_limit"
-
-getLoggerConfig :: MonadIO m => C.Config -> m LoggerConfig
-getLoggerConfig config = liftIO $ do
-  appInstanceName <- C.require config "log.app_instance_name"
-  logToStdout <- C.require config "log.log_to_stdout"
-  logLevelRaw <- C.require config "log.log_level"
-  pure $
-    LoggerConfig
-      { appInstanceName = appInstanceName,
-        logToStdout = logToStdout,
-        logLevel = fromMaybe Log.Debug (readMaybe logLevelRaw)
-      }
+loadConfig :: MonadIO m => FilePath -> m AppConfig
+loadConfig = liftIO . Dhall.inputFile Dhall.auto
