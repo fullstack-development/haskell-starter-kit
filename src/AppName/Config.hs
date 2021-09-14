@@ -6,8 +6,8 @@ module AppName.Config where
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Data.Text (Text)
 import qualified Dhall
-import GHC.Generics (Generic)
 import Ext.Logger.Config (LoggerConfig (..))
+import GHC.Generics (Generic)
 
 data AppConfig = AppConfig
   { authConfig :: AuthConfig,

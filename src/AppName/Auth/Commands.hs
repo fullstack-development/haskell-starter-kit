@@ -1,9 +1,9 @@
 module AppName.Auth.Commands where
 
 import qualified AppName.Config as C
+import Data.Text (unpack)
 import Servant.Auth.Server (writeKey)
 import qualified System.Directory as FS
-import Data.Text (unpack)
 
 createKey :: FilePath -> IO ()
 createKey filePath = do
