@@ -6,6 +6,13 @@
 *~
 haskell-starter-kit.cabal
 
+# cabal specific
+dist
+dist-*
+
+# nix specific
+result*
+
 # Auth key
 keys/*
 !keys/.git-keep
