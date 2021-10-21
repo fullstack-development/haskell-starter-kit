@@ -1,0 +1,244 @@
+cabal-version:  2.2
+name:           haskell-starter-kit
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/githubuser/haskell-starter-kit#readme>
+homepage:       https://github.com/fullstack-development/haskell-starter-kit#readme
+bug-reports:    https://github.com/fullstack-development/haskell-starter-kit/issues
+author:         Author name here
+maintainer:     example@example.com
+copyright:      2021 Author name here
+license:        BSD-3-Clause
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/fullstack-development/haskell-starter-kit
+
+common lang
+  default-language:   Haskell2010
+  default-extensions:
+    RecordWildCards
+    NamedFieldPuns
+    OverloadedStrings
+    FlexibleContexts
+    FlexibleInstances
+    StandaloneDeriving
+    ScopedTypeVariables
+    ExplicitForAll
+    TypeOperators
+    DeriveGeneric
+    MonoLocalBinds
+    LambdaCase
+    DeriveFoldable
+    DeriveFunctor
+    DeriveGeneric
+    DeriveLift
+    DeriveTraversable
+    ExplicitForAll
+    GeneralizedNewtypeDeriving
+
+  ghc-options:
+      -Wall -Wnoncanonical-monad-instances -Wincomplete-uni-patterns
+      -Wincomplete-record-updates -Wredundant-constraints -Widentities
+      -fobject-code -fno-ignore-interface-pragmas
+      -fno-omit-interface-pragmas
+
+library
+  import: lang
+  exposed-modules:
+      AppName.API
+      AppName.API.PhoneVerification
+      AppName.API.User
+      AppName.AppHandle
+      AppName.Auth
+      AppName.Auth.Combinators
+      AppName.Auth.Commands
+      AppName.Auth.ServantInstances
+      AppName.Auth.User
+      AppName.Config
+      AppName.Domain.PhoneVerification
+      AppName.Gateways.CryptoRandomGen
+      AppName.Gateways.Database
+      AppName.Gateways.Database.Connection
+      AppName.Gateways.Database.Setup
+      AppName.Gateways.Database.Tables.User
+      AppName.Gateways.Endpoints.FakeLogin
+      AppName.Gateways.Endpoints.GetUsers
+      AppName.Gateways.Endpoints.PhoneVerification
+      AppName.Gateways.Endpoints.SaveUsers
+      AppName.Gateways.PhoneVerificationStorage
+      AppName.Server
+      Ext.Data.Aeson
+      Ext.Data.Text
+      Ext.Data.Time
+      Ext.HTTP.Error
+      Ext.HTTP.Response
+      Ext.Logger
+      Ext.Logger.Colog
+      Ext.Logger.Config
+      Lib
+  other-modules:
+      Paths_haskell_starter_kit
+  hs-source-dirs:
+      src
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , basement
+    , bytestring
+    , co-log
+    , containers
+    , configurator
+    , cryptonite
+    , dhall
+    , directory
+    , esqueleto
+    , http-client
+    , http-client-tls
+    , jose
+    , memory
+    , monad-logger
+    , mtl
+    , persistent
+    , persistent-postgresql
+    , persistent-template
+    , postgresql-simple
+    , random
+    , resource-pool
+    , resourcet
+    , safe-exceptions
+    , servant-auth
+    , servant-auth-server
+    , servant-client
+    , servant-foreign
+    , servant-options
+    , servant-server
+    , stm
+    , text
+    , time
+    , typerep-map
+    , unliftio
+    , unliftio-core
+    , wai
+    , wai-cors
+    , wai-logger
+    , warp
+  default-language: Haskell2010
+
+executable haskell-starter-kit-exe
+  main-is: Main.hs
+  import: lang
+  hs-source-dirs:
+      app
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , basement
+    , bytestring
+    , co-log
+    , containers
+    , cryptonite
+    , dhall
+    , directory
+    , esqueleto
+    , haskell-starter-kit
+    , http-client
+    , http-client-tls
+    , jose
+    , memory
+    , monad-logger
+    , mtl
+    , persistent
+    , persistent-postgresql
+    , persistent-template
+    , postgresql-simple
+    , random
+    , resource-pool
+    , resourcet
+    , safe-exceptions
+    , servant-auth
+    , servant-auth-server
+    , servant-client
+    , servant-foreign
+    , servant-options
+    , servant-server
+    , stm
+    , text
+    , time
+    , typerep-map
+    , unliftio
+    , unliftio-core
+    , wai
+    , wai-cors
+    , wai-logger
+    , warp
+  if false
+    other-modules:
+        Paths_haskell_starter_kit
+  default-language: Haskell2010
+
+test-suite haskell-starter-kit-test
+  type: exitcode-stdio-1.0
+  import: lang
+  main-is: Spec.hs
+  other-modules:
+      PhoneVerification
+  hs-source-dirs:
+      test
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , basement
+    , bytestring
+    , co-log
+    , containers
+    , cryptonite
+    , dhall
+    , directory
+    , esqueleto
+    , haskell-starter-kit
+    , hspec
+    , hspec-core
+    , hspec-wai
+    , http-client
+    , http-client-tls
+    , http-types
+    , jose
+    , memory
+    , monad-logger
+    , mtl
+    , persistent
+    , persistent-postgresql
+    , persistent-template
+    , postgresql-simple
+    , random
+    , resource-pool
+    , resourcet
+    , safe-exceptions
+    , servant-auth
+    , servant-auth-server
+    , servant-client
+    , servant-foreign
+    , servant-options
+    , servant-server
+    , stm
+    , tasty
+    , tasty-hspec
+    , text
+    , time
+    , typerep-map
+    , unliftio
+    , unliftio-core
+    , wai
+    , wai-cors
+    , wai-extra
+    , wai-logger
+    , warp
+  if false
+    other-modules:
+        Paths_haskell_starter_kit
+  default-language: Haskell2010

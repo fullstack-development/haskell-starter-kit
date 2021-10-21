@@ -1,10 +1,17 @@
 # system
 .DS_Store
+.vscode
 
 # needed for stack
 .stack-work/
 *~
-haskell-starter-kit.cabal
+
+# cabal specific
+dist
+dist-*
+
+# nix specific
+result*
 
 # Auth key
 keys/*
