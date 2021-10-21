@@ -16,7 +16,8 @@ import Control.Monad.Logger
     NoLoggingT,
     runNoLoggingT,
     runStdoutLoggingT,
-  )
+    MonadLoggerIO
+  )˝
 import Data.Functor (($>))
 import Data.Pool (Pool, destroyAllResources)
 import Database.Persist.Postgresql (SqlBackend, createPostgresqlPoolModified)
@@ -29,7 +30,7 @@ withDbPool :: C.Config -> (Pool SqlBackend -> NoLoggingT IO a) -> IO a
 withDbPool = withLoggedDbPool runNoLoggingT
 
 withLoggedDbPool ::
-  (MonadUnliftIO m, MonadLogger m, MonadMask m) =>
+  (MonadUnliftIO m, MonadMask m, MonadLoggerIO m) =>
   (m a -> IO a) ->
   C.Config ->
   (Pool SqlBackend -> m a) ->

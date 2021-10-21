@@ -1,5 +1,6 @@
 # system
 .DS_Store
+.vscode
 
 # needed for stack
 .stack-work/

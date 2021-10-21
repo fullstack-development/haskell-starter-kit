@@ -1,4 +1,4 @@
-cabal-version: 1.12
+cabal-version:  2.2
 name:           haskell-starter-kit
 version:        0.1.0.0
 description:    Please see the README on GitHub at <https://github.com/githubuser/haskell-starter-kit#readme>
@@ -20,34 +20,35 @@ source-repository head
 
 common lang
   default-language:   Haskell2010
-    default-extensions:
-      RecordWildCards
-      NamedFieldPuns
-      OverloadedStrings
-      FlexibleContexts
-      FlexibleInstances
-      StandaloneDeriving
-      ScopedTypeVariables
-      ExplicitForAll
-      TypeOperators
-      DeriveGeneric
-      MonoLocalBinds
-      LambdaCase
-      DeriveFoldable
-      DeriveFunctor
-      DeriveGeneric
-      DeriveLift
-      DeriveTraversable
-      ExplicitForAll
-      GeneralizedNewtypeDeriving
+  default-extensions:
+    RecordWildCards
+    NamedFieldPuns
+    OverloadedStrings
+    FlexibleContexts
+    FlexibleInstances
+    StandaloneDeriving
+    ScopedTypeVariables
+    ExplicitForAll
+    TypeOperators
+    DeriveGeneric
+    MonoLocalBinds
+    LambdaCase
+    DeriveFoldable
+    DeriveFunctor
+    DeriveGeneric
+    DeriveLift
+    DeriveTraversable
+    ExplicitForAll
+    GeneralizedNewtypeDeriving
 
-    ghc-options:
-        -Wall -Wnoncanonical-monad-instances -Wincomplete-uni-patterns
-        -Wincomplete-record-updates -Wredundant-constraints -Widentities
-        -fobject-code -fno-ignore-interface-pragmas
-        -fno-omit-interface-pragmas
+  ghc-options:
+      -Wall -Wnoncanonical-monad-instances -Wincomplete-uni-patterns
+      -Wincomplete-record-updates -Wredundant-constraints -Widentities
+      -fobject-code -fno-ignore-interface-pragmas
+      -fno-omit-interface-pragmas
 
 library
+  import: lang
   exposed-modules:
       AppName.API
       AppName.API.PhoneVerification
@@ -82,12 +83,8 @@ library
       Lib
   other-modules:
       Paths_haskell_starter_kit
-  ghc-options:
-      -Wunused-packages
   hs-source-dirs:
       src
-  default-extensions: 
-  ghc-options: -Wall -Werror=missing-fields -Werror=incomplete-record-updates -Werror=missing-methods -Werror=incomplete-patterns
   build-depends:
       aeson
     , base >=4.7 && <5
@@ -134,10 +131,9 @@ library
 
 executable haskell-starter-kit-exe
   main-is: Main.hs
+  import: lang
   hs-source-dirs:
       app
-  default-extensions: RecordWildCards NamedFieldPuns OverloadedStrings FlexibleContexts FlexibleInstances StandaloneDeriving ScopedTypeVariables ExplicitForAll TypeOperators DeriveGeneric MonoLocalBinds LambdaCase
-  ghc-options: -Wall -Werror=missing-fields -Werror=incomplete-record-updates -Werror=missing-methods -Werror=incomplete-patterns -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
     , base >=4.7 && <5
@@ -187,13 +183,12 @@ executable haskell-starter-kit-exe
 
 test-suite haskell-starter-kit-test
   type: exitcode-stdio-1.0
+  import: lang
   main-is: Spec.hs
   other-modules:
       PhoneVerification
   hs-source-dirs:
       test
-  default-extensions: RecordWildCards NamedFieldPuns OverloadedStrings FlexibleContexts FlexibleInstances StandaloneDeriving ScopedTypeVariables ExplicitForAll TypeOperators DeriveGeneric MonoLocalBinds LambdaCase
-  ghc-options: -Wall -Werror=missing-fields -Werror=incomplete-record-updates -Werror=missing-methods -Werror=incomplete-patterns -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson
     , base >=4.7 && <5
